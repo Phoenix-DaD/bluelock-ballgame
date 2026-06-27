@@ -131,16 +131,16 @@ canvas {
   width: 100%;
   max-width: 860px;
   height: 280px;
-  gap: 12px;
-  padding: 0 12px;
+  gap: 10px;
+  padding: 0 10px;
   position: relative;
 }
 .rarity-sidebar {
-  width: 200px;
+  width: 240px;
   background: rgba(10, 10, 30, 0.9);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px;
-  padding: 8px;
+  padding: 12px;
   flex-shrink: 0;
   overflow-y: auto;
 }
@@ -329,9 +329,9 @@ canvas {
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
 
 /* Rarity Escalation */
-.roll-rarity-cycle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0; z-index: 5; }
+.roll-rarity-cycle { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0; z-index: 5; }
 .roll-rarity-cycle.active { opacity: 1; }
-.rarity-flash { font-size: 48px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 6px; color: #fff; text-shadow: 0 0 30px currentColor; opacity: 0; transform: scale(0.5); transition: all 0.15s ease; }
+.rarity-flash { font-size: 36px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 4px; color: #fff; text-shadow: 0 0 30px currentColor; opacity: 0; transform: scale(0.5); transition: all 0.15s ease; }
 .rarity-flash.show { opacity: 1; transform: scale(1.1); }
 .rarity-flash.hide { opacity: 0; transform: scale(1.5); }
 
@@ -416,7 +416,7 @@ Sign in with Google
 <div id="characterCollection" class="screen-overlay hidden">
 <h1>Your Collection</h1>
 <div class="collection-header">
-<div class="roll-info">Daily Rolls: <span id="dailyRollsDisplay">5</span> | Bonus: <span id="bonusRollsDisplay">0</span></div>
+<div class="roll-info">Spins: <span id="totalRollsDisplay">5</span> (Daily: <span id="dailyRollsDisplay">5</span>)</div>
 <button class="roll-btn" id="rollBtn" onclick="rollCharacter()">ROLL</button>
 </div>
 <div class="character-grid" id="collectionGrid"></div>
@@ -690,9 +690,9 @@ function showCharacterCollection() {
   loadPlayerData().then(() => {
     buildCollectionGrid();
     if (playerData.stats) {
-      document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls || 0;
-      document.getElementById('bonusRollsDisplay').textContent = playerData.stats.bonus_rolls || 0;
       const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
+      document.getElementById('totalRollsDisplay').textContent = totalRolls;
+      document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls || 0;
       const rollBtn = document.getElementById('rollBtn');
       rollBtn.disabled = totalRolls <= 0;
       rollBtn.textContent = totalRolls > 0 ? 'ROLL' : 'NO ROLLS';
@@ -821,21 +821,21 @@ async function rollCharacter() {
     else { message = 'Roll failed! Check console for errors.'; console.error('Failed to save:', charKey, rarity); }
   }
 
-  if (playerData.stats.bonus_rolls > 0) {
-    playerData.stats.bonus_rolls--;
-    await updateStats({ bonus_rolls: playerData.stats.bonus_rolls });
-  } else {
+  if (playerData.stats.daily_rolls > 0) {
     playerData.stats.daily_rolls--;
     await updateStats({ daily_rolls: playerData.stats.daily_rolls });
+  } else {
+    playerData.stats.bonus_rolls--;
+    await updateStats({ bonus_rolls: playerData.stats.bonus_rolls });
   }
 
   await runEgoAwakening(rarity, charKey, data, message);
 
   await loadPlayerData();
   buildCollectionGrid();
-  document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls;
-  document.getElementById('bonusRollsDisplay').textContent = playerData.stats.bonus_rolls;
   const total = playerData.stats.daily_rolls + playerData.stats.bonus_rolls;
+  document.getElementById('totalRollsDisplay').textContent = total;
+  document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls;
   const rollBtn = document.getElementById('rollBtn');
   rollBtn.disabled = total <= 0;
   rollBtn.textContent = total > 0 ? 'ROLL' : 'NO ROLLS';
