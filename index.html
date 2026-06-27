@@ -167,8 +167,7 @@ canvas {
 }
 .tier-chance {
   font-size: 10px;
-  opacity: 0.7;
-  font-weight: 400;
+  font-weight: 700;
 }
 .tier-chars {
   font-size: 10px;
@@ -696,7 +695,7 @@ function buildCollectionGrid() {
     const chars = pool.map(k => CHARACTERS[k]?.name || k).join(', ');
     const tier = document.createElement('div');
     tier.className = 'rarity-tier';
-    tier.innerHTML = '<div class="tier-header" style="color:' + color + '"><span class="tier-name">' + rarity + '</span><span class="tier-chance">(' + chance + '%)</span></div><div class="tier-chars">' + (chars || 'Coming soon...') + '</div>';
+    tier.innerHTML = '<div class="tier-header" style="color:' + color + '"><span class="tier-name">' + rarity + '</span><span class="tier-chance" style="color:' + color + '">(' + chance + '%)</span></div><div class="tier-chars">' + (chars || 'Coming soon...') + '</div>';
     sidebar.appendChild(tier);
   });
   grid.appendChild(sidebar);
@@ -1078,7 +1077,7 @@ class Player {
     const darkColor = this._darken(charColor); const img = this.character ? IMAGES[this.character.imgKey] : null;
     ctx.beginPath(); ctx.ellipse(this.x + 2, this.y + this.radius - 4, this.radius * 0.8, this.radius * 0.3, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.clip();
-    if (img && img.complete && img.naturalWidth > 0) { const srcW = img.naturalWidth, srcH = img.naturalHeight, faceCropY = srcH * 0.05, faceCropH = srcH * 0.85, faceCropX = srcW * 0.05, faceCropW = srcW * 0.9, drawSize = this.radius * 2.2; ctx.drawImage(img, faceCropX, faceCropY, faceCropW, faceCropH, this.x - drawSize * 0.5, this.y - drawSize * 0.5, drawSize, drawSize); const vg = ctx.createRadialGradient(this.x, this.y, this.radius * 0.5, this.x, this.y, this.radius); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.2)'); ctx.fillStyle = vg; ctx.fill(); }
+    if (img && img.complete && img.naturalWidth > 0) { const srcW = img.naturalWidth, srcH = img.naturalHeight, cropSize = Math.min(srcW, srcH) * 0.9, faceCropY = srcH * 0.02, faceCropH = cropSize, faceCropX = (srcW - cropSize) / 2, faceCropW = cropSize, drawSize = this.radius * 2.2; ctx.drawImage(img, faceCropX, faceCropY, faceCropW, faceCropH, this.x - drawSize * 0.5, this.y - drawSize * 0.5, drawSize, drawSize); const vg = ctx.createRadialGradient(this.x, this.y, this.radius * 0.5, this.x, this.y, this.radius); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.2)'); ctx.fillStyle = vg; ctx.fill(); }
     else { const g = ctx.createRadialGradient(this.x - 6, this.y - 6, 4, this.x, this.y, this.radius); g.addColorStop(0, charColor); g.addColorStop(1, darkColor); ctx.fillStyle = g; ctx.fill(); }
     ctx.restore();
     ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.strokeStyle = darkColor; ctx.lineWidth = 3; ctx.stroke();
