@@ -1386,9 +1386,13 @@ function endGame(text, isWin) {
 
   // Character image
   const charImg = document.getElementById('winCharImg');
-  const myChar = playerData.characters && playerData.characters[0];
-  if (myChar && CHARACTERS[myChar.character_key]) {
-    charImg.src = IMAGE_DATA[CHARACTERS[myChar.character_key].imgKey];
+  if (playerCharacter && playerCharacter.imgKey) {
+    charImg.src = IMAGE_DATA[playerCharacter.imgKey];
+  } else if (playerData.characters && playerData.characters[0]) {
+    const myChar = playerData.characters[0];
+    if (CHARACTERS[myChar.character_key]) {
+      charImg.src = IMAGE_DATA[CHARACTERS[myChar.character_key].imgKey];
+    }
   }
 
   // Title
