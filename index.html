@@ -45,7 +45,8 @@ canvas {
 }
 
 /* Login Page */
-#loginPage .subtitle { margin-bottom: 50px; }
+#loginPage .subtitle { margin-bottom: 30px; }
+#loginPage h1 { font-size: 48px; margin-bottom: 6px; }
 #googleSignInBtn {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 28px; font-size: 18px; font-weight: 700;
@@ -86,35 +87,161 @@ canvas {
 .back-btn { background: linear-gradient(135deg, #2c3e50, #1a252f); margin-top: 20px; width: 200px; }
 
 /* Character Collection */
+#characterCollection {
+  padding: 20px 0;
+}
+#characterCollection h1 {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
 .collection-header {
-  display: flex; justify-content: space-between; align-items: center;
-  width: 100%; max-width: 800px; padding: 0 20px; margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 860px;
+  padding: 0 20px;
+  margin-bottom: 15px;
 }
 .roll-info {
-  color: rgba(255,255,255,0.6); font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
   font-family: 'Roboto Condensed', sans-serif;
 }
 .roll-info span { color: #00d4ff; font-weight: 700; }
 .roll-btn {
-  padding: 12px 30px; font-size: 18px; font-weight: 700;
-  border: none; border-radius: 30px; cursor: pointer;
-  background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a1a;
-  font-family: 'Oswald', sans-serif; letter-spacing: 1px;
-  transition: all 0.25s ease; text-transform: uppercase;
+  padding: 10px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #1a1a1a;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  text-transform: uppercase;
 }
 .roll-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(255,215,0,0.3); }
 .roll-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 .character-grid {
   display: flex;
-  gap: 20px;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row;
   width: 100%;
-  max-width: 850px;
-  height: 280px;
-  overflow: hidden;
+  max-width: 860px;
+  height: 300px;
+  gap: 20px;
   padding: 0 20px;
   position: relative;
+}
+.rarity-sidebar {
+  width: 200px;
+  background: rgba(10, 10, 30, 0.9);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+.rarity-tier {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.rarity-tier:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.tier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.tier-chance {
+  font-size: 10px;
+  opacity: 0.7;
+  font-weight: 400;
+}
+.tier-chars {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.4;
+}
+.owned-display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.owned-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  color: #00d4ff;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+.owned-empty {
+  color: rgba(255,255,255,0.4);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+.owned-card {
+  width: 180px;
+  padding: 0 0 12px 0;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  text-align: center;
+  color: white;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+.owned-card .char-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 14px 14px 0 0;
+}
+.owned-card .name {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Oswald', sans-serif;
+}
+.owned-card .stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin: 2px 10px;
+}
+.owned-card .rarity-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 5;
 }
 
 .collection-card {
@@ -165,7 +292,8 @@ canvas {
 .roll-result-card button:hover { transform: scale(1.1); }
 
 /* Settings */
-.settings-section { width: 300px; margin: 15px 0; }
+.settings-section { width: 300px; margin: 10px 0; }
+#settingsPage h1 { font-size: 42px; margin-bottom: 15px; }
 .settings-label { color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 8px; font-family: 'Roboto Condensed', sans-serif; }
 .difficulty-selector { display: flex; gap: 10px; }
 .diff-btn { flex: 1; padding: 10px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: transparent; color: white; cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 14px; transition: all 0.2s; }
@@ -205,107 +333,6 @@ canvas {
 .bonus-roll-msg { font-size: 20px; color: #ffd700; margin-top: 15px; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
 
 
-
-/* Rarity Panel */
-.rarity-panel {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 190px;
-  background: rgba(10, 10, 30, 0.9);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 10px;
-  z-index: 10;
-}
-.rarity-tier {
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.rarity-tier:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-.tier-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-}
-.tier-chance {
-  font-size: 11px;
-  opacity: 0.7;
-  font-weight: 400;
-}
-.tier-chars {
-  font-size: 11px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.4;
-}
-
-/* Owned Section */
-.owned-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-width: 300px;
-}
-.owned-label {
-  font-family: 'Oswald', sans-serif;
-  font-size: 18px;
-  color: #00d4ff;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 15px;
-}
-.owned-empty {
-  color: rgba(255,255,255,0.4);
-  font-size: 14px;
-  text-align: center;
-  padding: 40px;
-}
-.owned-card {
-  width: 200px;
-  padding: 0 0 15px 0;
-  background: rgba(255,255,255,0.06);
-  border: 2px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  text-align: center;
-  color: white;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-}
-.owned-card .char-img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  object-position: top center;
-  border-radius: 14px 14px 0 0;
-}
-.owned-card .name {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 10px 0 6px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: 'Oswald', sans-serif;
-}
-.owned-card .stat-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  margin: 3px 12px;
-}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -653,9 +680,9 @@ function buildCollectionGrid() {
   const grid = document.getElementById('collectionGrid');
   grid.innerHTML = '';
 
-  // Build rarity info panel
-  const rarityPanel = document.createElement('div');
-  rarityPanel.className = 'rarity-panel';
+  // Build rarity sidebar
+  const sidebar = document.createElement('div');
+  sidebar.className = 'rarity-sidebar';
   
   RARITY_ORDER.forEach(rarity => {
     const pool = RARITY_POOLS[rarity];
@@ -665,16 +692,16 @@ function buildCollectionGrid() {
     const tier = document.createElement('div');
     tier.className = 'rarity-tier';
     tier.innerHTML = '<div class="tier-header" style="color:' + color + '"><span class="tier-name">' + rarity + '</span><span class="tier-chance">(' + chance + '%)</span></div><div class="tier-chars">' + (chars || 'Coming soon...') + '</div>';
-    rarityPanel.appendChild(tier);
+    sidebar.appendChild(tier);
   });
-  grid.appendChild(rarityPanel);
+  grid.appendChild(sidebar);
 
   // Show owned character
-  const ownedSection = document.createElement('div');
-  ownedSection.className = 'owned-section';
+  const display = document.createElement('div');
+  display.className = 'owned-display';
   
   if (playerData.characters.length === 0) {
-    ownedSection.innerHTML = '<div class="owned-empty">No character yet. Press ROLL to get your first Egoist!</div>';
+    display.innerHTML = '<div class="owned-empty">No character yet.<br>Press ROLL to get your first Egoist!</div>';
   } else {
     const char = playerData.characters[0];
     const data = CHARACTERS[char.character_key];
@@ -683,10 +710,11 @@ function buildCollectionGrid() {
         const color = v >= 80 ? 'stat-green' : v >= 50 ? 'stat-yellow' : 'stat-red';
         return '<div class="stat-row"><span style="text-transform:capitalize;">' + s + '</span><div class="stat-bar"><div class="stat-bar-inner ' + color + '" style="width:' + v + '%"></div></div></div>';
       }).join('');
-      ownedSection.innerHTML = '<div class="owned-label">Your Egoist</div><div class="owned-card rarity-' + char.rarity + '"><div class="rarity-badge">' + char.rarity + '</div><img class="char-img" src="' + IMAGE_DATA[data.imgKey] + '" alt="' + data.name + '"><div class="name">' + data.name + '</div>' + statsHtml + '</div>';
+      const badgeColor = RARITY[char.rarity]?.color || '#fff';
+      display.innerHTML = '<div class="owned-label">Your Egoist</div><div class="owned-card rarity-' + char.rarity + '"><div class="rarity-badge" style="background:' + badgeColor + ';color:' + (char.rarity === 'Common' || char.rarity === 'Legendary' ? '#111' : '#fff') + '">' + char.rarity + '</div><img class="char-img" src="' + IMAGE_DATA[data.imgKey] + '" alt="' + data.name + '"><div class="name">' + data.name + '</div>' + statsHtml + '</div>';
     }
   }
-  grid.appendChild(ownedSection);
+  grid.appendChild(display);
 }
 
 function buildPlaySelectGrid() {
@@ -734,8 +762,14 @@ async function rollCharacter() {
       playerData.characters = [];
     }
     const newChar = await saveRolledCharacter(charKey, rarity);
-    if (newChar) playerData.characters = [newChar];
-    message = 'You rolled ' + data.name + '!';
+    console.log('Roll result:', newChar);
+    if (newChar) {
+      playerData.characters = [newChar];
+      message = 'You rolled ' + data.name + '!';
+    } else {
+      message = 'Roll failed! Check console for errors.';
+      console.error('Failed to save rolled character. charKey:', charKey, 'rarity:', rarity);
+    }
   }
 
   if (playerData.stats.bonus_rolls > 0) {
