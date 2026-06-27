@@ -10,7 +10,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   background: #050510;
-  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100vh;
   font-family: 'Roboto Condensed', sans-serif;
   overflow: hidden;
@@ -29,9 +31,15 @@ canvas {
 
 /* Common overlay styles */
 .screen-overlay {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  height: 550px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: rgba(5, 5, 20, 0.95); z-index: 20; pointer-events: all;
+  border-radius: 8px;
 }
 .screen-overlay.hidden { display: none !important; }
 .screen-overlay h1 {
