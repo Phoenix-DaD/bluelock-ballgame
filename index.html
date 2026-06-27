@@ -653,12 +653,14 @@ function createCharacterWithRarity(charKey, rarity) {
 // ─── Auth Functions ──────────────────────────────────────────────
 async function signInWithGoogle() {
   try {
+    const currentUrl = window.location.href.split('?')[0].split('#')[0];
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: 'https://phoenix-dad.github.io/bluelock-ballgame/' }
+      options: { redirectTo: currentUrl }
     });
     if (error) { console.error('Auth error:', error); alert('Sign-in failed: ' + error.message); }
     else if (data?.url) { window.location.href = data.url; }
+    else { console.log('No OAuth URL returned'); alert('Sign-in failed. Please check console.'); }
   } catch (e) { console.error(e); alert('Sign-in failed. Make sure Google OAuth is configured in Supabase.'); }
 }
 
