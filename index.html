@@ -393,9 +393,37 @@ canvas {
 #goalFlash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 15; display: none; background: radial-gradient(circle at center, rgba(255,200,0,0.3) 0%, transparent 60%); }
 #goalText { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ffd700; text-shadow: 0 4px 20px rgba(0,0,0,0.9), 0 0 40px rgba(255,215,0,0.6); pointer-events: none; z-index: 16; display: none; letter-spacing: 8px; animation: goalPulse 0.8s ease-out; }
 @keyframes goalPulse { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 40% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-#winner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00d4ff; font-size: 44px; font-weight: 700; font-family: 'Oswald', sans-serif; text-shadow: 0 4px 12px rgba(0,0,0,0.9), 0 0 30px rgba(0,150,255,0.5); display: none; pointer-events: none; text-align: center; letter-spacing: 2px; z-index: 30; }
-#winner button { pointer-events: all; margin-top: 25px; padding: 12px 35px; font-size: 20px; cursor: pointer; border: none; border-radius: 30px; background: linear-gradient(135deg, #1a75ff, #0d47a1); color: white; font-weight: 700; font-family: 'Oswald', sans-serif; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(0,100,255,0.4); }
-#winner button:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(0,100,255,0.6); }
+#winner {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; pointer-events: all; z-index: 30; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
+}
+#winner .win-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; transition: opacity 0.5s ease; }
+#winner.victory .win-bg { background: radial-gradient(ellipse at center, rgba(0,212,255,0.15) 0%, rgba(0,50,100,0.3) 50%, rgba(5,5,20,0.95) 100%); opacity: 1; }
+#winner.defeat .win-bg { background: radial-gradient(ellipse at center, rgba(255,30,30,0.15) 0%, rgba(100,0,0,0.3) 50%, rgba(5,5,20,0.95) 100%); opacity: 1; }
+#winner .win-particles { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
+#winner .win-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; opacity: 0; animation: particleRise 2s ease-out infinite; }
+@keyframes particleRise { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-200px) scale(0); opacity: 0; } }
+#winner .win-character { position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 3px solid; margin-bottom: 20px; opacity: 0; transform: scale(0); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+#winner.victory .win-character { border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+#winner.defeat .win-character { border-color: #ff1744; box-shadow: 0 0 30px rgba(255,23,68,0.3); }
+#winner.active .win-character { opacity: 1; transform: scale(1); }
+#winner .win-character img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+#winner .win-title { font-size: 64px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 8px; margin-bottom: 8px; opacity: 0; transform: translateY(-30px) scale(0.8); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+#winner.victory .win-title { color: #ffd700; text-shadow: 0 0 40px rgba(255,215,0,0.6), 0 4px 12px rgba(0,0,0,0.9); }
+#winner.defeat .win-title { color: #ff1744; text-shadow: 0 0 40px rgba(255,23,68,0.6), 0 4px 12px rgba(0,0,0,0.9); }
+#winner.active .win-title { opacity: 1; transform: translateY(0) scale(1); }
+#winner .win-subtitle { font-size: 18px; font-weight: 400; font-family: 'Roboto Condensed', sans-serif; color: rgba(255,255,255,0.6); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.2s; }
+#winner.active .win-subtitle { opacity: 1; transform: translateY(0); }
+#winner .win-score { font-size: 28px; font-weight: 700; font-family: 'Oswald', sans-serif; color: white; letter-spacing: 3px; margin-bottom: 15px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.35s; }
+#winner.active .win-score { opacity: 1; transform: translateY(0); }
+#winner .win-bonus { font-size: 20px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ffd700; letter-spacing: 2px; margin-bottom: 30px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.5s; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
+#winner.active .win-bonus { opacity: 1; transform: translateY(0); }
+#winner .win-btn { padding: 14px 50px; font-size: 20px; font-weight: 700; border: 2px solid; border-radius: 30px; cursor: pointer; background: transparent; font-family: 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease 0.6s; opacity: 0; transform: translateY(20px); }
+#winner.victory .win-btn { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+#winner.victory .win-btn:hover { background: #ffd700; color: #111; box-shadow: 0 0 30px rgba(255,215,0,0.5); }
+#winner.defeat .win-btn { border-color: #ff1744; color: #ff1744; box-shadow: 0 0 20px rgba(255,23,68,0.2); }
+#winner.defeat .win-btn:hover { background: #ff1744; color: #fff; box-shadow: 0 0 30px rgba(255,23,68,0.5); }
+#winner.active .win-btn { opacity: 1; transform: translateY(0); }
+#winner .win-btn:hover { transform: scale(1.05); }
 
 /* Game Canvas Area - centered 900x550 */
 .game-area {
@@ -421,7 +449,16 @@ canvas {
 <div id="controls">BLUE LOCK — First to 5 goals wins</div>
 <div id="goalFlash"></div>
 <div id="goalText">GOAL!</div>
-<div id="winner"><div id="winnerText"></div><div class="bonus-roll-msg" id="bonusRollMsg"></div><button onclick="returnToMenu()">Continue</button></div>
+<div id="winner">
+  <div class="win-bg"></div>
+  <div class="win-particles" id="winParticles"></div>
+  <div class="win-character" id="winChar"><img id="winCharImg" src="" alt=""></div>
+  <div class="win-title" id="winTitle"></div>
+  <div class="win-subtitle" id="winSubtitle"></div>
+  <div class="win-score" id="winScore"></div>
+  <div class="win-bonus" id="winBonus"></div>
+  <button class="win-btn" onclick="returnToMenu()">Continue</button>
+</div>
 </div>
 
 <!-- Login Page -->
@@ -765,7 +802,7 @@ function goToPlay() {
 function goToCharacter() { showCharacterCollection(); }
 function goToSettings() { showSettings(); }
 function setDifficulty(diff) { selectedDifficulty = diff; document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.diff === diff)); }
-function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; showMainMenu(); }
+function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; const winner = document.getElementById('winner'); winner.classList.remove('active'); winner.style.display = 'none'; showMainMenu(); }
 
 // ─── Collection Grid ──────────────────────────────────────────────
 function buildCollectionGrid() {
@@ -1343,17 +1380,52 @@ function endGame(text, isWin) {
   gameOver = true; gameState = 'gameover';
   if (window._goalTimeout) { clearTimeout(window._goalTimeout); window._goalTimeout = null; }
   document.getElementById('goalFlash').style.display = 'none'; document.getElementById('goalText').style.display = 'none';
-  document.getElementById('winnerText').textContent = text;
-  const bonusMsg = document.getElementById('bonusRollMsg');
+
+  const winner = document.getElementById('winner');
+  winner.className = isWin ? 'victory' : 'defeat';
+
+  // Character image
+  const charImg = document.getElementById('winCharImg');
+  if (playerCharacter && playerCharacter.imgKey) {
+    charImg.src = IMAGE_DATA[playerCharacter.imgKey];
+  }
+
+  // Title
+  document.getElementById('winTitle').textContent = isWin ? 'Victory' : 'Defeat';
+  document.getElementById('winSubtitle').textContent = isWin ? 'The Best Striker' : 'Your Ego Wasn\'t Enough';
+  document.getElementById('winScore').textContent = scores.blue + ' - ' + scores.red;
+
+  // Bonus rolls
+  const bonusEl = document.getElementById('winBonus');
   if (isWin) {
     const rollReward = selectedDifficulty === 'easy' ? 0 : selectedDifficulty === 'medium' ? 1 : 2;
-    bonusMsg.textContent = rollReward > 0 ? '+' + rollReward + ' Bonus Roll' + (rollReward > 1 ? 's!' : '!') : 'No bonus on Easy!';
+    bonusEl.textContent = rollReward > 0 ? '+' + rollReward + ' Bonus Roll' + (rollReward > 1 ? 's!' : '!') : 'No bonus on Easy!';
     handleWin(rollReward);
   } else {
-    bonusMsg.textContent = '';
+    bonusEl.textContent = '';
     handleLoss();
   }
-  document.getElementById('winner').style.display = 'block';
+
+  // Generate particles
+  const particlesContainer = document.getElementById('winParticles');
+  particlesContainer.innerHTML = '';
+  const color = isWin ? '#ffd700' : '#ff1744';
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'win-particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '0';
+    p.style.background = color;
+    p.style.animationDelay = (Math.random() * 2) + 's';
+    p.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    particlesContainer.appendChild(p);
+  }
+
+  winner.style.display = 'flex';
+  // Trigger animation with a tiny delay so display:flex takes effect first
+  requestAnimationFrame(() => {
+    winner.classList.add('active');
+  });
 }
 
 // ─── Input Handling ──────────────────────────────────────────
