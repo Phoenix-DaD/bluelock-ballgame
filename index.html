@@ -402,11 +402,10 @@ canvas {
 #winner .win-particles { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
 #winner .win-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; opacity: 0; animation: particleRise 2s ease-out infinite; }
 @keyframes particleRise { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-200px) scale(0); opacity: 0; } }
-#winner .win-character { position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 3px solid; margin-bottom: 20px; opacity: 0; transform: scale(0); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 30px rgba(0,0,0,0.5); background: #050510; }
+#winner .win-character { position: relative; width: 150px; height: 150px; border-radius: 50%; overflow: hidden; border: 3px solid; margin-bottom: 20px; opacity: 0; transform: scale(0); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 30px rgba(0,0,0,0.5); background-color: #050510; background-size: 140%; background-position: 50% 10%; background-repeat: no-repeat; }
 #winner.victory .win-character { border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
 #winner.defeat .win-character { border-color: #ff1744; box-shadow: 0 0 30px rgba(255,23,68,0.3); }
 #winner.active .win-character { opacity: 1; transform: scale(1); }
-#winner .win-character img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
 #winner .win-title { font-size: 64px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 8px; margin-bottom: 8px; opacity: 0; transform: translateY(-30px) scale(0.8); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
 #winner.victory .win-title { color: #ffd700; text-shadow: 0 0 40px rgba(255,215,0,0.6), 0 4px 12px rgba(0,0,0,0.9); }
 #winner.defeat .win-title { color: #ff1744; text-shadow: 0 0 40px rgba(255,23,68,0.6), 0 4px 12px rgba(0,0,0,0.9); }
@@ -452,7 +451,7 @@ canvas {
 <div id="winner">
   <div class="win-bg"></div>
   <div class="win-particles" id="winParticles"></div>
-  <div class="win-character" id="winChar"><img id="winCharImg" src="" alt=""></div>
+  <div class="win-character" id="winChar"></div>
   <div class="win-title" id="winTitle"></div>
   <div class="win-subtitle" id="winSubtitle"></div>
   <div class="win-score" id="winScore"></div>
@@ -802,7 +801,7 @@ function goToPlay() {
 function goToCharacter() { showCharacterCollection(); }
 function goToSettings() { showSettings(); }
 function setDifficulty(diff) { selectedDifficulty = diff; document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.diff === diff)); }
-function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; const winner = document.getElementById('winner'); winner.classList.remove('active'); winner.style.display = 'none'; showMainMenu(); }
+function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; const winner = document.getElementById('winner'); winner.classList.remove('active'); winner.style.display = 'none'; document.getElementById('winChar').style.backgroundImage = ''; showMainMenu(); }
 
 // ─── Collection Grid ──────────────────────────────────────────────
 function buildCollectionGrid() {
@@ -1385,13 +1384,13 @@ function endGame(text, isWin) {
   winner.className = isWin ? 'victory' : 'defeat';
 
   // Character image
-  const charImg = document.getElementById('winCharImg');
+  const charDiv = document.getElementById('winChar');
   if (playerCharacter && playerCharacter.imgKey) {
-    charImg.src = IMAGE_DATA[playerCharacter.imgKey];
+    charDiv.style.backgroundImage = 'url(' + IMAGE_DATA[playerCharacter.imgKey] + ')';
   } else if (playerData.characters && playerData.characters[0]) {
     const myChar = playerData.characters[0];
     if (CHARACTERS[myChar.character_key]) {
-      charImg.src = IMAGE_DATA[CHARACTERS[myChar.character_key].imgKey];
+      charDiv.style.backgroundImage = 'url(' + IMAGE_DATA[CHARACTERS[myChar.character_key].imgKey] + ')';
     }
   }
 
