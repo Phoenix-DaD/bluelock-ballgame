@@ -358,7 +358,7 @@ async function signInWithGoogle() {
   try {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href }
+      options: { redirectTo: 'https://phoenix-dad.github.io/bluelock-ballgame/' }
     });
     if (error) { console.error('Auth error:', error); alert('Sign-in failed: ' + error.message); }
     else if (data?.url) { window.location.href = data.url; }
