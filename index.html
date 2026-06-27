@@ -328,6 +328,13 @@ canvas {
 .roll-shake { animation: shake 0.3s ease-in-out; }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
 
+/* Rarity Escalation */
+.roll-rarity-cycle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0; z-index: 5; }
+.roll-rarity-cycle.active { opacity: 1; }
+.rarity-flash { font-size: 48px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 6px; color: #fff; text-shadow: 0 0 30px currentColor; opacity: 0; transform: scale(0.5); transition: all 0.15s ease; }
+.rarity-flash.show { opacity: 1; transform: scale(1.1); }
+.rarity-flash.hide { opacity: 0; transform: scale(1.5); }
+
 /* Settings */
 .settings-section { width: 300px; margin: 10px 0; }
 #settingsPage h1 { font-size: 42px; margin-bottom: 15px; }
@@ -454,6 +461,9 @@ Sign in with Google
   <div class="roll-bg"></div>
   <div class="roll-particles" id="rollParticles"></div>
   <div class="roll-burst" id="rollBurst"></div>
+  <div class="roll-rarity-cycle" id="rollRarityCycle">
+    <div class="rarity-flash" id="rarityFlash">COMMON</div>
+  </div>
   <div class="roll-lock" id="rollLock">
     <div class="lock-shackle"></div>
     <div class="lock-body"></div>
@@ -838,25 +848,28 @@ async function runEgoAwakening(rarity, charKey, data, message) {
   const burst = document.getElementById('rollBurst');
   const reveal = document.getElementById('rollReveal');
   const particles = document.getElementById('rollParticles');
-  const rarityColor = getRarityColor(rarity);
-  const rarityGlow = rarityColor + '40';
+  const rarityCycle = document.getElementById('rollRarityCycle');
+  const rarityFlash = document.getElementById('rarityFlash');
+  const finalColor = getRarityColor(rarity);
+  const finalGlow = finalColor + '40';
 
   overlay.style.display = 'flex';
-  overlay.style.setProperty('--rarity-color', rarityColor);
-  overlay.style.setProperty('--rarity-glow', rarityGlow);
+  overlay.style.setProperty('--rarity-color', finalColor);
+  overlay.style.setProperty('--rarity-glow', finalGlow);
   lock.className = 'roll-lock';
   lock.style.display = '';
   reveal.className = 'roll-reveal';
   burst.className = 'roll-burst';
+  rarityCycle.className = 'roll-rarity-cycle';
+  rarityFlash.className = 'rarity-flash';
   particles.innerHTML = '';
 
-  // Generate orbiting particles
   for (let i = 0; i < 20; i++) {
     const p = document.createElement('div');
     p.className = 'roll-particle';
     p.style.left = '50%';
     p.style.top = '50%';
-    p.style.background = rarityColor;
+    p.style.background = '#00d4ff';
     const angle = (i / 20) * Math.PI * 2;
     const dist = 80 + Math.random() * 60;
     const duration = 1.5 + Math.random() * 1;
@@ -873,16 +886,38 @@ async function runEgoAwakening(rarity, charKey, data, message) {
     document.head.appendChild(s);
   }
 
-  // Phase 1: EGO LOCKED (0-800ms)
   lockSub.textContent = 'DECODING POTENTIAL...';
   await new Promise(r => setTimeout(r, 800));
 
-  // Phase 2: LOCK CRACKING (800-1400ms)
-  lockSub.textContent = 'BREAKING EGO...';
-  lock.className = 'roll-lock cracking';
-  await new Promise(r => setTimeout(r, 600));
+  lockSub.textContent = 'EGO ESCALATING...';
+  rarityCycle.classList.add('active');
+  const cycleOrder = ['Common', 'Rare', 'Epic', 'Legendary', 'Mythic'];
+  const cycleIndex = cycleOrder.indexOf(rarity);
+  
+  for (let i = 0; i <= cycleIndex; i++) {
+    const r = cycleOrder[i];
+    const color = getRarityColor(r);
+    rarityFlash.textContent = r;
+    rarityFlash.style.color = color;
+    rarityFlash.style.textShadow = `0 0 30px ${color}`;
+    rarityFlash.classList.remove('hide');
+    rarityFlash.classList.add('show');
+    overlay.style.setProperty('--rarity-color', color);
+    overlay.style.setProperty('--rarity-glow', color + '40');
+    lock.className = 'roll-lock cracking';
+    document.querySelectorAll('.roll-particle').forEach(p => { p.style.background = color; });
+    const delay = i === cycleIndex ? 500 : 220;
+    await new Promise(r => setTimeout(r, delay));
+    if (i < cycleIndex) {
+      rarityFlash.classList.remove('show');
+      rarityFlash.classList.add('hide');
+      await new Promise(r => setTimeout(r, 80));
+    }
+  }
+  rarityCycle.classList.remove('active');
+  lock.className = 'roll-lock';
+  await new Promise(r => setTimeout(r, 200));
 
-  // Phase 3: LOCK SHATTER + BURST (1400-2200ms)
   lock.className = 'roll-lock shatter';
   burst.className = 'roll-burst active';
   if (rarity === 'Legendary' || rarity === 'Mythic') {
@@ -893,7 +928,6 @@ async function runEgoAwakening(rarity, charKey, data, message) {
   lock.style.display = 'none';
   await new Promise(r => setTimeout(r, 400));
 
-  // Phase 4: CHARACTER REVEAL (2200-3400ms)
   burst.className = 'roll-burst';
   particles.innerHTML = '';
   
@@ -924,10 +958,14 @@ function closeRollResult() {
   const overlay = document.getElementById('rollOverlay');
   const lock = document.getElementById('rollLock');
   const reveal = document.getElementById('rollReveal');
+  const rarityCycle = document.getElementById('rollRarityCycle');
+  const rarityFlash = document.getElementById('rarityFlash');
   overlay.style.display = 'none';
   lock.style.display = '';
   lock.className = 'roll-lock';
   reveal.className = 'roll-reveal';
+  rarityCycle.className = 'roll-rarity-cycle';
+  rarityFlash.className = 'rarity-flash';
   document.getElementById('revealName').classList.remove('active');
   document.getElementById('revealRarity').classList.remove('active');
   document.getElementById('revealMsg').classList.remove('active');
