@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="app-version" content="1.0.0">
 <title>BLUE LOCK — Ego Striker</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
@@ -591,6 +592,102 @@ const SUPABASE_URL = 'https://ejdriewxbqmvqzzegbwk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_3U5yXOd82Ww6c1jTzRHrlw_vFSTqBkS';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ─── Auto Update System ───────────────────────────────────────────
+const APP_VERSION = document.querySelector('meta[name="app-version"]')?.content || '1.0.0';
+let updatePending = false;
+let pendingVersion = null;
+
+async function checkForUpdates() {
+  try {
+    const response = await fetch(window.location.href + '?check=' + Date.now(), { cache: 'no-store' });
+    const text = await response.text();
+    const match = text.match(/<meta name="app-version" content="([^"]+)"/);
+    if (match && match[1] !== APP_VERSION) {
+      handleUpdateDetected(match[1]);
+    }
+  } catch (e) { /* Silent fail */ }
+}
+
+function handleUpdateDetected(newVersion) {
+  if (updatePending) return;
+  updatePending = true;
+  pendingVersion = newVersion;
+
+  // If in a match, wait until they return to a menu
+  if (gameState === 'playing' || gameState === 'gameover') {
+    // Show a subtle notification
+    showUpdateNotification();
+    return;
+  }
+
+  performReload();
+}
+
+function showUpdateNotification() {
+  const notif = document.createElement('div');
+  notif.id = 'updateNotification';
+  notif.innerHTML = '🔄 Update available! Will reload after this match.';
+  notif.style.cssText = 'position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); color:#00d4ff; padding:10px 15px; border-radius:8px; font-family:"Oswald",sans-serif; font-size:13px; z-index:100; border:1px solid #00d4ff; opacity:0; transition:opacity 0.5s;';
+  document.body.appendChild(notif);
+  requestAnimationFrame(() => notif.style.opacity = '1');
+}
+
+function hideUpdateNotification() {
+  const notif = document.getElementById('updateNotification');
+  if (notif) {
+    notif.style.opacity = '0';
+    setTimeout(() => notif.remove(), 500);
+  }
+}
+
+function saveMenuState() {
+  const state = {
+    gameState: gameState,
+    menu: document.querySelector('.screen-overlay:not(.hidden)')?.id || 'mainMenu',
+    timestamp: Date.now()
+  };
+  sessionStorage.setItem('bluelockMenuState', JSON.stringify(state));
+}
+
+function restoreMenuState() {
+  const saved = sessionStorage.getItem('bluelockMenuState');
+  if (!saved) return false;
+  sessionStorage.removeItem('bluelockMenuState');
+  
+  try {
+    const state = JSON.parse(saved);
+    // Only restore if it was saved recently (within 5 minutes)
+    if (Date.now() - state.timestamp > 300000) return false;
+    
+    // Restore the menu
+    if (state.gameState === 'menu') showMainMenu();
+    else if (state.gameState === 'collection') showCharacterCollection();
+    else if (state.gameState === 'settings') showSettings();
+    else if (state.gameState === 'playSelect') showPlaySelect();
+    else return false;
+    
+    return true;
+  } catch (e) { return false; }
+}
+
+function performReload() {
+  saveMenuState();
+  sessionStorage.setItem('bluelockVersion', pendingVersion || 'unknown');
+  window.location.reload();
+}
+
+function checkPendingReload() {
+  if (updatePending && (gameState !== 'playing' && gameState !== 'gameover')) {
+    hideUpdateNotification();
+    performReload();
+  }
+}
+
+// Check for updates every 30 seconds
+setInterval(checkForUpdates, 30000);
+// Also check when returning to menus
+window.addEventListener('focus', checkPendingReload);
+
 // ─── Game State ──────────────────────────────────────────────
 let currentUser = null;
 let playerData = { characters: [], stats: null };
@@ -672,15 +769,23 @@ async function signOut() {
 
 async function checkSession() {
   const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) { currentUser = session.user; await loadPlayerData(); showMainMenu(); }
-  else { showLoginPage(); }
+  if (session) {
+    currentUser = session.user;
+    await loadPlayerData();
+    // Try to restore previous menu after an update reload
+    if (!restoreMenuState()) showMainMenu();
+  } else {
+    showLoginPage();
+  }
 }
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
     if (!currentUser) {
       currentUser = session.user;
-      loadPlayerData().then(() => showMainMenu());
+      loadPlayerData().then(() => {
+        if (!restoreMenuState()) showMainMenu();
+      });
     }
   } else if (event === 'SIGNED_OUT') {
     currentUser = null; playerData = { characters: [], stats: null };
@@ -765,6 +870,7 @@ async function handleLoss() {
 function showLoginPage() {
   hideAllScreens(); gameState = 'login';
   document.getElementById('loginPage').classList.remove('hidden');
+  checkPendingReload();
 }
 
 function showMainMenu() {
@@ -777,6 +883,7 @@ function showMainMenu() {
     const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
     document.getElementById('menuRolls').textContent = totalRolls;
   }
+  checkPendingReload();
 }
 
 function showCharacterCollection() {
@@ -792,6 +899,7 @@ function showCharacterCollection() {
       rollBtn.disabled = totalRolls <= 0;
       rollBtn.textContent = totalRolls > 0 ? 'ROLL' : 'NO ROLLS';
     }
+    checkPendingReload();
   });
 }
 
@@ -799,12 +907,14 @@ function showSettings() {
   hideAllScreens(); gameState = 'settings';
   document.getElementById('settingsPage').classList.remove('hidden');
   document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.diff === selectedDifficulty));
+  checkPendingReload();
 }
 
 function showPlaySelect() {
   hideAllScreens(); gameState = 'playSelect';
   document.getElementById('playSelect').classList.remove('hidden');
   buildPlaySelectGrid();
+  checkPendingReload();
 }
 
 function hideAllScreens() {
@@ -829,7 +939,7 @@ function goToPlay() {
 function goToCharacter() { showCharacterCollection(); }
 function goToSettings() { showSettings(); }
 function setDifficulty(diff) { selectedDifficulty = diff; document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.diff === diff)); }
-function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; const winner = document.getElementById('winner'); winner.classList.remove('active'); winner.style.display = 'none'; document.getElementById('winChar').style.backgroundImage = ''; showMainMenu(); }
+function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; const winner = document.getElementById('winner'); winner.classList.remove('active'); winner.style.display = 'none'; document.getElementById('winChar').style.backgroundImage = ''; showMainMenu(); checkPendingReload(); }
 
 // ─── Collection Grid ──────────────────────────────────────────────
 function buildCollectionGrid() {
