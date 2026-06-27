@@ -31,15 +31,9 @@ canvas {
 
 /* Common overlay styles */
 .screen-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 900px;
-  height: 550px;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: rgba(5, 5, 20, 0.95); z-index: 20; pointer-events: all;
-  border-radius: 8px;
 }
 .screen-overlay.hidden { display: none !important; }
 .screen-overlay h1 {
@@ -402,6 +396,18 @@ canvas {
 #winner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00d4ff; font-size: 44px; font-weight: 700; font-family: 'Oswald', sans-serif; text-shadow: 0 4px 12px rgba(0,0,0,0.9), 0 0 30px rgba(0,150,255,0.5); display: none; pointer-events: none; text-align: center; letter-spacing: 2px; z-index: 30; }
 #winner button { pointer-events: all; margin-top: 25px; padding: 12px 35px; font-size: 20px; cursor: pointer; border: none; border-radius: 30px; background: linear-gradient(135deg, #1a75ff, #0d47a1); color: white; font-weight: 700; font-family: 'Oswald', sans-serif; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(0,100,255,0.4); }
 #winner button:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(0,100,255,0.6); }
+
+/* Game UI Area - centered 900x550 */
+.game-ui-area {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  height: 550px;
+  pointer-events: none;
+  z-index: 15;
+}
 .bonus-roll-msg { font-size: 20px; color: #ffd700; margin-top: 15px; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
 
 
@@ -513,11 +519,13 @@ Sign in with Google
 </div>
 
 <!-- Game UI -->
+<div class="game-ui-area">
 <div id="ui"><div id="score">0 - 0</div><div id="info">WASD to move · Left click: Direct Shot · Right click: Steal/Dash</div></div>
 <div id="controls">BLUE LOCK — First to 5 goals wins</div>
 <div id="goalFlash"></div>
 <div id="goalText">GOAL!</div>
 <div id="winner"><div id="winnerText"></div><div class="bonus-roll-msg" id="bonusRollMsg"></div><button onclick="returnToMenu()">Continue</button></div>
+</div>
 
 </div>
 
