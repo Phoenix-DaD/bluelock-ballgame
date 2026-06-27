@@ -377,18 +377,18 @@ canvas {
 
 /* VS Screen */
 #vsScreen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: row; align-items: center; justify-content: center; background: rgba(5, 5, 20, 0.8); z-index: 25; pointer-events: none; overflow: hidden; }
-.vs-char { text-align: center; color: white; margin: 0 30px; opacity: 0; transform: translateX(-100px); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.vs-char.right { transform: translateX(100px); }
+.vs-char { text-align: center; color: white; margin: 0 50px; opacity: 0; transform: translateX(-80px); transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.vs-char.right { transform: translateX(80px); }
 .vs-char.active { opacity: 1; transform: translateX(0); }
-.vs-char img { width: 200px; height: 260px; object-fit: cover; object-position: top center; border-radius: 12px; border: 3px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); opacity: 0; transform: scale(0.8); transition: all 0.5s ease 0.3s; }
+.vs-char img { width: 220px; height: 300px; object-fit: cover; object-position: top center; border-radius: 16px; border: 3px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); opacity: 0; transform: scale(0.85); transition: all 0.6s ease 0.4s; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
 .vs-char.active img { opacity: 1; transform: scale(1); }
-.vs-char .vs-name { font-size: 32px; font-weight: 700; font-family: 'Oswald', sans-serif; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.5s; }
+.vs-char .vs-name { font-size: 36px; font-weight: 700; font-family: 'Oswald', sans-serif; margin-top: 20px; text-transform: uppercase; letter-spacing: 3px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease 0.6s; }
 .vs-char.active .vs-name { opacity: 1; transform: translateY(0); }
-.vs-char .vs-label { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 5px; opacity: 0; transition: all 0.4s ease 0.7s; }
+.vs-char .vs-label { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 8px; opacity: 0; transition: all 0.4s ease 0.8s; }
 .vs-char.active .vs-label { opacity: 1; }
-.vs-divider { font-size: 72px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; text-shadow: 0 0 20px rgba(255,23,68,0.5); opacity: 0; transform: scale(0.5); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s; }
-.vs-divider.active { opacity: 1; transform: scale(1); }
-.vs-choosing { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 700; font-family: 'Oswald', sans-serif; color: rgba(255,255,255,0.6); letter-spacing: 6px; text-transform: uppercase; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.vs-divider { font-size: 80px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; text-shadow: 0 0 30px rgba(255,23,68,0.5); opacity: 0; transform: scale(0.3) rotate(-15deg); transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s; }
+.vs-divider.active { opacity: 1; transform: scale(1) rotate(0deg); }
+.vs-choosing { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 700; font-family: 'Oswald', sans-serif; color: rgba(255,255,255,0.5); letter-spacing: 8px; text-transform: uppercase; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
 .vs-choosing.show { opacity: 1; }
 .vs-choosing.hide { opacity: 0; }
 
@@ -1114,7 +1114,7 @@ function selectPlayCharacter(charKey, rarity) {
       aiName.textContent = data.name;
       aiName.className = 'vs-name ' + getVsNameClass(key);
       cycleIndex++;
-    }, 120);
+    }, 180);
 
     // Stop cycling and reveal final opponent
     setTimeout(() => {
@@ -1131,8 +1131,8 @@ function selectPlayCharacter(charKey, rarity) {
         vsAI.classList.add('active');
         vsDivider.classList.add('active');
       });
-    }, 900);
-  }, 400);
+    }, 1500);
+  }, 600);
 
   // Phase 3: Start game after full animation
   setTimeout(() => {
@@ -1152,7 +1152,7 @@ function selectPlayCharacter(charKey, rarity) {
     updateScore();
     ball.reset(false);
     initPlayers();
-  }, 2500);
+  }, 3500);
 }
 
 // ─── Canvas & Constants ──────────────────────────────────────────────
