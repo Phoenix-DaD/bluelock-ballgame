@@ -765,7 +765,7 @@ function goToPlay() {
 function goToCharacter() { showCharacterCollection(); }
 function goToSettings() { showSettings(); }
 function setDifficulty(diff) { selectedDifficulty = diff; document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.diff === diff)); }
-function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); showMainMenu(); }
+function returnToMenu() { gameOver = false; scores = { blue: 0, red: 0 }; updateScore(); document.body.style.cursor = 'default'; showMainMenu(); }
 
 // ─── Collection Grid ──────────────────────────────────────────────
 function buildCollectionGrid() {
@@ -1028,6 +1028,7 @@ function selectPlayCharacter(charKey, rarity) {
     document.getElementById('controls').style.display = 'block';
     document.getElementById('gameCanvas').style.display = 'block';
     gameState = 'playing';
+    document.body.style.cursor = 'crosshair';
     gameOver = false;
     scores = { blue: 0, red: 0 };
     updateScore();
@@ -1356,12 +1357,10 @@ function endGame(text, isWin) {
 }
 
 // ─── Input Handling ──────────────────────────────────────────
-// ─── Input Handling ──────────────────────────────────────────
-canvas.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('contextmenu', e => { if (gameState === 'playing') e.preventDefault(); });
 window.addEventListener('mousedown', e => {
   if (gameState !== 'playing' || gameOver) return;
-  // Ignore clicks on menu buttons
-  if (e.target.closest('button') || e.target.closest('.screen-overlay') || e.target.closest('.game-area') === null) return;
+  if (e.target.closest('button') || e.target.closest('.screen-overlay')) return;
   const rect = canvas.getBoundingClientRect();
   const mx = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
   const my = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
