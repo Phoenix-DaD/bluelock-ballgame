@@ -376,12 +376,29 @@ canvas {
 .play-select-card .rarity-text { font-size: 11px; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* VS Screen */
-#vsScreen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: row; align-items: center; justify-content: center; background: rgba(5, 5, 20, 0.95); z-index: 25; pointer-events: none; }
-.vs-char { text-align: center; color: white; margin: 0 30px; }
-.vs-char img { width: 200px; height: 260px; object-fit: cover; object-position: top center; border-radius: 12px; border: 3px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); }
-.vs-char .vs-name { font-size: 32px; font-weight: 700; font-family: 'Oswald', sans-serif; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; }
-.vs-divider { font-size: 72px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; text-shadow: 0 0 20px rgba(255,23,68,0.5); }
-.vs-label { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 5px; }
+#vsScreen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: row; align-items: center; justify-content: center; background: rgba(5, 5, 20, 0.98); z-index: 25; pointer-events: none; overflow: hidden; }
+.vs-char { text-align: center; color: white; margin: 0 30px; opacity: 0; transform: translateX(-100px); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.vs-char.right { transform: translateX(100px); }
+.vs-char.active { opacity: 1; transform: translateX(0); }
+.vs-char img { width: 200px; height: 260px; object-fit: cover; object-position: top center; border-radius: 12px; border: 3px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); opacity: 0; transform: scale(0.8); transition: all 0.5s ease 0.3s; }
+.vs-char.active img { opacity: 1; transform: scale(1); }
+.vs-char .vs-name { font-size: 32px; font-weight: 700; font-family: 'Oswald', sans-serif; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.5s; }
+.vs-char.active .vs-name { opacity: 1; transform: translateY(0); }
+.vs-char .vs-label { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 5px; opacity: 0; transition: all 0.4s ease 0.7s; }
+.vs-char.active .vs-label { opacity: 1; }
+.vs-divider { font-size: 72px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; text-shadow: 0 0 20px rgba(255,23,68,0.5); opacity: 0; transform: scale(0.5); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s; }
+.vs-divider.active { opacity: 1; transform: scale(1); }
+.vs-choosing { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 700; font-family: 'Oswald', sans-serif; color: rgba(255,255,255,0.6); letter-spacing: 6px; text-transform: uppercase; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.vs-choosing.show { opacity: 1; }
+.vs-choosing.hide { opacity: 0; }
+
+/* VS Character Name Colors */
+.vs-name.isagi { color: #29B6F6; text-shadow: 0 0 15px rgba(41,182,246,0.4); }
+.vs-name.bachira { color: #00E676; text-shadow: 0 0 15px rgba(0,230,118,0.4); }
+.vs-name.rin { color: #3D5AFE; text-shadow: 0 0 15px rgba(61,90,254,0.4); }
+.vs-name.nagi { color: #CFD8DC; text-shadow: 0 0 15px rgba(207,216,220,0.4); }
+.vs-name.barou { color: #EF5350; text-shadow: 0 0 15px rgba(239,83,80,0.4); }
+.vs-name.chigiri { color: #FF7043; text-shadow: 0 0 15px rgba(255,112,67,0.4); }
 
 /* Game UI */
 #ui { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; text-align: center; pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-family: 'Oswald', sans-serif; display: none; }
@@ -525,9 +542,10 @@ Sign in with Google
 
 <!-- VS Screen -->
 <div id="vsScreen">
-<div class="vs-char" id="vsPlayer"><img id="vsPlayerImg" src="" alt=""><div class="vs-name" id="vsPlayerName"></div><div class="vs-label">YOU</div></div>
-<div class="vs-divider">VS</div>
-<div class="vs-char" id="vsAI"><img id="vsAIImg" src="" alt=""><div class="vs-name" id="vsAIName"></div><div class="vs-label">RIVAL</div></div>
+  <div class="vs-choosing" id="vsChoosing">CHOOSING RIVAL...</div>
+  <div class="vs-char" id="vsPlayer"><img id="vsPlayerImg" src="" alt=""><div class="vs-name" id="vsPlayerName"></div><div class="vs-label">YOU</div></div>
+  <div class="vs-divider" id="vsDivider">VS</div>
+  <div class="vs-char right" id="vsAI"><img id="vsAIImg" src="" alt=""><div class="vs-name" id="vsAIName"></div><div class="vs-label">RIVAL</div></div>
 </div>
 
 <!-- Roll Animation - Ego Awakening -->
@@ -1040,6 +1058,11 @@ function closeRollResult() {
 }
 
 // ─── Play Flow ──────────────────────────────────────────────
+function getVsNameClass(charKey) {
+  const map = { isagi: 'isagi', bachira: 'bachira', rin: 'rin', nagi: 'nagi', barou: 'barou', chigiri: 'chigiri' };
+  return map[charKey] || '';
+}
+
 function selectPlayCharacter(charKey, rarity) {
   playerCharacter = createCharacterWithRarity(charKey, rarity);
   const allKeys = Object.keys(CHARACTERS).filter(k => k !== charKey);
@@ -1050,16 +1073,75 @@ function selectPlayCharacter(charKey, rarity) {
   hideAllScreens();
 
   const vsScreen = document.getElementById('vsScreen');
+  const vsPlayer = document.getElementById('vsPlayer');
+  const vsAI = document.getElementById('vsAI');
+  const vsDivider = document.getElementById('vsDivider');
+  const vsChoosing = document.getElementById('vsChoosing');
+  const aiImg = document.getElementById('vsAIImg');
+  const aiName = document.getElementById('vsAIName');
+
+  // Set up player (static, no cycling)
   document.getElementById('vsPlayerImg').src = IMAGE_DATA[playerCharacter.imgKey];
-  document.getElementById('vsPlayerName').textContent = playerCharacter.name;
-  document.getElementById('vsPlayerName').style.color = playerCharacter.color;
-  document.getElementById('vsAIImg').src = IMAGE_DATA[aiCharacter.imgKey];
-  document.getElementById('vsAIName').textContent = aiCharacter.name;
-  document.getElementById('vsAIName').style.color = aiCharacter.color;
+  const playerNameEl = document.getElementById('vsPlayerName');
+  playerNameEl.textContent = playerCharacter.name;
+  playerNameEl.className = 'vs-name ' + getVsNameClass(playerCharacter.imgKey);
+
+  // Reset animation states
+  vsPlayer.classList.remove('active');
+  vsAI.classList.remove('active');
+  vsDivider.classList.remove('active');
+  vsChoosing.classList.remove('show', 'hide');
+  aiName.className = 'vs-name';
+
+  // Show VS screen
   vsScreen.style.display = 'flex';
 
+  // Phase 1: Player slides in
+  requestAnimationFrame(() => {
+    vsPlayer.classList.add('active');
+  });
+
+  // Phase 2: Show "CHOOSING RIVAL" and cycle opponents
+  setTimeout(() => {
+    vsChoosing.classList.add('show');
+
+    const rivalKeys = allKeys;
+    let cycleIndex = 0;
+    const cycleInterval = setInterval(() => {
+      const key = rivalKeys[cycleIndex % rivalKeys.length];
+      const data = CHARACTERS[key];
+      aiImg.src = IMAGE_DATA[data.imgKey];
+      aiName.textContent = data.name;
+      aiName.className = 'vs-name ' + getVsNameClass(key);
+      cycleIndex++;
+    }, 120);
+
+    // Stop cycling and reveal final opponent
+    setTimeout(() => {
+      clearInterval(cycleInterval);
+      vsChoosing.classList.remove('show');
+      vsChoosing.classList.add('hide');
+
+      aiImg.src = IMAGE_DATA[aiCharacter.imgKey];
+      aiName.textContent = aiCharacter.name;
+      aiName.className = 'vs-name ' + getVsNameClass(aiCharacter.imgKey);
+
+      // Slide in opponent and VS divider
+      requestAnimationFrame(() => {
+        vsAI.classList.add('active');
+        vsDivider.classList.add('active');
+      });
+    }, 900);
+  }, 400);
+
+  // Phase 3: Start game after full animation
   setTimeout(() => {
     vsScreen.style.display = 'none';
+    vsPlayer.classList.remove('active');
+    vsAI.classList.remove('active');
+    vsDivider.classList.remove('active');
+    vsChoosing.classList.remove('hide');
+
     document.getElementById('ui').style.display = 'block';
     document.getElementById('controls').style.display = 'block';
     document.getElementById('gameCanvas').style.display = 'block';
