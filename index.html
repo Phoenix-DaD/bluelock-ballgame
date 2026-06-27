@@ -540,10 +540,12 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 // ─── Database Functions ──────────────────────────────────────────────
 async function loadPlayerData() {
   if (!currentUser) return;
+  console.log('loadPlayerData() starting for user:', currentUser.id);
 
   // Load characters
   const { data: chars, error: cErr } = await supabaseClient.from('player_characters').select('*').eq('user_id', currentUser.id);
-  if (!cErr) playerData.characters = chars || [];
+  if (cErr) { console.error('Load characters error:', cErr); }
+  else { console.log('Loaded characters:', chars); playerData.characters = chars || []; }
 
   // Load stats
   const { data: stats, error: sErr } = await supabaseClient.from('player_stats').select('*').eq('user_id', currentUser.id).single();
@@ -563,6 +565,7 @@ async function loadPlayerData() {
     }
     playerData.stats = stats;
   }
+  console.log('loadPlayerData() done. chars:', playerData.characters.length, 'stats:', playerData.stats);
 }
 
 async function saveRolledCharacter(charKey, rarity) {
@@ -628,15 +631,17 @@ function showMainMenu() {
 function showCharacterCollection() {
   hideAllScreens(); gameState = 'collection';
   document.getElementById('characterCollection').classList.remove('hidden');
-  buildCollectionGrid();
-  if (playerData.stats) {
-    document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls || 0;
-    document.getElementById('bonusRollsDisplay').textContent = playerData.stats.bonus_rolls || 0;
-    const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
-    const rollBtn = document.getElementById('rollBtn');
-    rollBtn.disabled = totalRolls <= 0;
-    rollBtn.textContent = totalRolls > 0 ? 'ROLL' : 'NO ROLLS';
-  }
+  loadPlayerData().then(() => {
+    buildCollectionGrid();
+    if (playerData.stats) {
+      document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls || 0;
+      document.getElementById('bonusRollsDisplay').textContent = playerData.stats.bonus_rolls || 0;
+      const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
+      const rollBtn = document.getElementById('rollBtn');
+      rollBtn.disabled = totalRolls <= 0;
+      rollBtn.textContent = totalRolls > 0 ? 'ROLL' : 'NO ROLLS';
+    }
+  });
 }
 
 function showSettings() {
@@ -806,6 +811,7 @@ async function rollCharacter() {
 
   document.getElementById('rollResult').style.display = 'flex';
 
+  await loadPlayerData();
   buildCollectionGrid();
   document.getElementById('dailyRollsDisplay').textContent = playerData.stats.daily_rolls;
   document.getElementById('bonusRollsDisplay').textContent = playerData.stats.bonus_rolls;
