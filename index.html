@@ -391,6 +391,13 @@ canvas {
 .vs-choosing { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 700; font-family: 'Oswald', sans-serif; color: rgba(255,255,255,0.5); letter-spacing: 8px; text-transform: uppercase; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
 .vs-choosing.show { opacity: 1; }
 .vs-choosing.hide { opacity: 0; }
+.vs-found { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; letter-spacing: 6px; text-transform: uppercase; opacity: 0; transition: all 0.4s ease; pointer-events: none; text-shadow: 0 0 30px rgba(255,23,68,0.6); }
+.vs-found.active { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+.vs-found::before { content: '◆'; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); color: #ff1744; font-size: 12px; }
+.vs-found::after { content: '◆'; position: absolute; right: -30px; top: 50%; transform: translateY(-50%); color: #ff1744; font-size: 12px; }
+.vs-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); opacity: 0; pointer-events: none; z-index: 26; transition: none; }
+.vs-flash.active { animation: flashBang 0.4s ease-out forwards; }
+@keyframes flashBang { 0% { opacity: 0.9; } 30% { opacity: 0.6; } 100% { opacity: 0; } }
 
 /* VS Character Name Colors */
 .vs-name.isagi { color: #29B6F6; text-shadow: 0 0 15px rgba(41,182,246,0.4); }
@@ -542,7 +549,9 @@ Sign in with Google
 
 <!-- VS Screen -->
 <div id="vsScreen">
+  <div class="vs-flash" id="vsFlash"></div>
   <div class="vs-choosing" id="vsChoosing">CHOOSING RIVAL...</div>
+  <div class="vs-found" id="vsFound">MATCH FOUND</div>
   <div class="vs-char" id="vsPlayer"><img id="vsPlayerImg" src="" alt=""><div class="vs-name" id="vsPlayerName"></div><div class="vs-label">YOU</div></div>
   <div class="vs-divider" id="vsDivider">VS</div>
   <div class="vs-char right" id="vsAI"><img id="vsAIImg" src="" alt=""><div class="vs-name" id="vsAIName"></div><div class="vs-label">RIVAL</div></div>
@@ -1086,11 +1095,13 @@ function selectPlayCharacter(charKey, rarity) {
   playerNameEl.textContent = playerCharacter.name;
   playerNameEl.className = 'vs-name ' + getVsNameClass(playerCharacter.imgKey);
 
-  // Reset animation states
+:  // Reset animation states
   vsPlayer.classList.remove('active');
   vsAI.classList.remove('active');
   vsDivider.classList.remove('active');
   vsChoosing.classList.remove('show', 'hide');
+  document.getElementById('vsFound').classList.remove('active');
+  document.getElementById('vsFlash').classList.remove('active');
   aiName.className = 'vs-name';
 
   // Show VS screen
@@ -1122,25 +1133,39 @@ function selectPlayCharacter(charKey, rarity) {
       vsChoosing.classList.remove('show');
       vsChoosing.classList.add('hide');
 
+      // DRAMATIC REVEAL: Flash!
+      const vsFlash = document.getElementById('vsFlash');
+      vsFlash.classList.add('active');
+      setTimeout(() => { vsFlash.classList.remove('active'); }, 400);
+
+      // Set final opponent
       aiImg.src = IMAGE_DATA[aiCharacter.imgKey];
       aiName.textContent = aiCharacter.name;
       aiName.className = 'vs-name ' + getVsNameClass(aiCharacter.imgKey);
 
+      // "MATCH FOUND" pops up
+      const vsFound = document.getElementById('vsFound');
+      vsFound.classList.add('active');
+      setTimeout(() => { vsFound.classList.remove('active'); }, 800);
+
       // Slide in opponent and VS divider
       requestAnimationFrame(() => {
         vsAI.classList.add('active');
-        vsDivider.classList.add('active');
       });
+      setTimeout(() => {
+        vsDivider.classList.add('active');
+      }, 300);
     }, 1500);
   }, 600);
 
-  // Phase 3: Start game after full animation
+  // Phase 3: Start game after full animation (4.5s total for more drama)
   setTimeout(() => {
     vsScreen.style.display = 'none';
     vsPlayer.classList.remove('active');
     vsAI.classList.remove('active');
     vsDivider.classList.remove('active');
     vsChoosing.classList.remove('hide');
+    document.getElementById('vsFound').classList.remove('active');
 
     document.getElementById('ui').style.display = 'block';
     document.getElementById('controls').style.display = 'block';
@@ -1152,7 +1177,7 @@ function selectPlayCharacter(charKey, rarity) {
     updateScore();
     ball.reset(false);
     initPlayers();
-  }, 3500);
+  }, 4500);
 }
 
 // ─── Canvas & Constants ──────────────────────────────────────────────
