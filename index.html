@@ -135,6 +135,15 @@ canvas {
   padding: 0 10px;
   position: relative;
 }
+.collection-actions {
+  margin: 10px 0 0 0;
+  display: flex;
+  justify-content: center;
+}
+.collection-actions .roll-btn {
+  padding: 14px 40px;
+  font-size: 18px;
+}
 .rarity-sidebar {
   width: 260px;
   background: rgba(10, 10, 30, 0.9);
@@ -329,9 +338,9 @@ canvas {
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
 
 /* Rarity Escalation */
-.roll-rarity-cycle { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0; z-index: 5; }
+.roll-rarity-cycle { position: absolute; top: 25px; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0; z-index: 5; height: 0; }
 .roll-rarity-cycle.active { opacity: 1; }
-.rarity-flash { font-size: 36px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 4px; color: #fff; text-shadow: 0 0 30px currentColor; opacity: 0; transform: scale(0.5); transition: all 0.15s ease; }
+.rarity-flash { font-size: 22px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 3px; color: #fff; text-shadow: 0 0 15px currentColor; opacity: 0; transform: scale(0.5); transition: all 0.15s ease; }
 .rarity-flash.show { opacity: 1; transform: scale(1.1); }
 .rarity-flash.hide { opacity: 0; transform: scale(1.5); }
 
@@ -417,9 +426,11 @@ Sign in with Google
 <h1>Your Collection</h1>
 <div class="collection-header">
 <div class="roll-info">Spins: <span id="totalRollsDisplay">5</span> (Daily: <span id="dailyRollsDisplay">5</span>)</div>
-<button class="roll-btn" id="rollBtn" onclick="rollCharacter()">ROLL</button>
 </div>
 <div class="character-grid" id="collectionGrid"></div>
+<div class="collection-actions">
+<button class="roll-btn" id="rollBtn" onclick="rollCharacter()">ROLL</button>
+</div>
 <button class="menu-btn back-btn" onclick="showMainMenu()">Back</button>
 </div>
 
