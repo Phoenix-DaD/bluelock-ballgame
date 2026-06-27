@@ -1356,14 +1356,24 @@ function endGame(text, isWin) {
 }
 
 // ─── Input Handling ──────────────────────────────────────────
+// ─── Input Handling ──────────────────────────────────────────
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('mousedown', e => {
+window.addEventListener('mousedown', e => {
   if (gameState !== 'playing' || gameOver) return;
-  const rect = canvas.getBoundingClientRect(); const mx = e.clientX - rect.left; const my = e.clientY - rect.top; const bp = bluePlayer(); if (!bp) return;
+  // Ignore clicks on menu buttons
+  if (e.target.closest('button') || e.target.closest('.screen-overlay') || e.target.closest('.game-area') === null) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
+  const my = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
+  const bp = bluePlayer(); if (!bp) return;
   if (e.button === 0) { if (bp.hasBall) { const dx = mx - bp.x, dy = my - bp.y; bp.kick(dx, dy); } }
   else if (e.button === 2) { if (bp.hasBall) bp.dribble(); else { const dx = mx - bp.x, dy = my - bp.y; bp.dash(dx, dy); } }
 });
-canvas.addEventListener('mousemove', e => { const rect = canvas.getBoundingClientRect(); mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top; });
+window.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
+  mouse.y = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
+});
 window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
 window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
