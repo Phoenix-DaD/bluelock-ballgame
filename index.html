@@ -1464,6 +1464,8 @@ function showMainMenu() {
 }
 
 function hideAllScreens() {
+  document.querySelectorAll('.screen-overlay').forEach(s => s.classList.add('hidden'));
+}
 
 // ─── Collection Grid ──────────────────────────────────────────────
 function buildCollectionGrid() {
