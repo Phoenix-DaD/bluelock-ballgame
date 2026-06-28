@@ -568,8 +568,12 @@ canvas {
 /* Leave Button */
 #leaveBtn {
   display: none;
-  width: 80%;
-  margin: 12px auto 0;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 720px;
+  max-width: 90vw;
   padding: 14px 0;
   border: 2px solid #ff1744;
   border-radius: 10px;
@@ -584,14 +588,15 @@ canvas {
   text-shadow: 0 0 12px rgba(255,23,68,0.5);
   box-shadow: 0 0 20px rgba(255,23,68,0.15), inset 0 0 20px rgba(255,23,68,0.05);
   transition: all 0.3s ease;
+  z-index: 50;
 }
 #leaveBtn:hover {
   background: linear-gradient(135deg, rgba(255,23,68,0.3), rgba(255,23,68,0.1));
   box-shadow: 0 0 30px rgba(255,23,68,0.3), inset 0 0 30px rgba(255,23,68,0.1);
-  transform: scale(1.02);
+  transform: translateX(-50%) scale(1.02);
 }
 #leaveBtn:active {
-  transform: scale(0.98);
+  transform: translateX(-50%) scale(0.98);
 }
 
 /* Game Canvas Area - centered 900x550 */
@@ -628,7 +633,6 @@ canvas {
   <div class="win-bonus" id="winBonus"></div>
   <button class="win-btn" onclick="returnToMenu()">Continue</button>
 </div>
-<button id="leaveBtn" onclick="leaveGame()">✕ Leave Match</button>
 </div>
 
 <!-- Login Page -->
@@ -644,7 +648,7 @@ Sign in with Google
 
 <!-- Neo Egoist League Play Menu -->
 <div id="nelPlayMenu" class="screen-overlay hidden">
-<h1 style="font-size:28px;margin-bottom:4px;">Neo <span style="color:#ffd700;">EGOIST LEAGUE</span></h1>
+<h1 style="font-size:28px;margin-bottom:4px;">NEO <span style="color:#ffd700;">EGOIST LEAGUE</span></h1>
 <div class="subtitle">Choose your battlefield</div>
 <div class="nel-grid" id="nelGrid">
   <div class="nel-section">
@@ -2465,5 +2469,6 @@ function gameLoop() {
 gameLoop();
 checkSession();
 </script>
+<button id="leaveBtn" onclick="leaveGame()">✕ Leave Match</button>
 </body>
 </html>
