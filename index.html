@@ -191,6 +191,7 @@ canvas {
 .nel-card { flex: 1; min-width: 280px; height: 160px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.1); background: rgba(10,10,30,0.8); cursor: pointer; transition: all 0.3s ease; overflow: hidden; position: relative; display: flex; flex-direction: column; }
 .nel-card:hover { transform: translateY(-5px) scale(1.02); border-color: #00d4ff; box-shadow: 0 15px 40px rgba(0,100,255,0.2); }
 .nel-card:active { transform: translateY(-2px) scale(0.98); }
+.nel-card.full-width { flex: 0 0 100%; min-width: 100%; }
 .nel-card .nel-card-img { width: 100%; height: 80px; background: rgba(0,0,0,0.3); position: relative; overflow: hidden; }
 .nel-card .nel-card-img::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, transparent 50%, rgba(10,10,30,0.9) 100%); }
 .nel-card .nel-card-content { padding: 12px 16px; flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; }
@@ -647,41 +648,41 @@ Sign in with Google
 <div class="subtitle">Choose your battlefield</div>
 <div class="nel-grid" id="nelGrid">
   <div class="nel-section">
-    <div class="nel-section-title">1V1 MODES</div>
+    <div class="nel-section-title">RANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" onclick="selectPlayMode('1v1_ranked')">
-        <div class="nel-card-img" id="nel1v1RankedImg"></div>
+      <div class="nel-card" onclick="selectPlayMode('ranked_1v1')">
+        <div class="nel-card-img" id="nelRanked1v1Img"></div>
         <div class="nel-card-content">
-          <div class="nel-card-name">RANKED</div>
+          <div class="nel-card-name">1V1 RANKED</div>
           <div class="nel-card-desc">Compete for rank points</div>
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
-      <div class="nel-card" onclick="selectPlayMode('1v1_unranked')">
-        <div class="nel-card-img" id="nel1v1UnrankedImg"></div>
+      <div class="nel-card" onclick="selectPlayMode('ranked_2v2')">
+        <div class="nel-card-img" id="nelRanked2v2Img"></div>
         <div class="nel-card-content">
-          <div class="nel-card-name">UNRANKED</div>
-          <div class="nel-card-desc">Casual matchmaking</div>
-          <div class="nel-card-badge">🎮</div>
+          <div class="nel-card-name">2V2 RANKED</div>
+          <div class="nel-card-desc">Team up for glory</div>
+          <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
     </div>
   </div>
   <div class="nel-section">
-    <div class="nel-section-title">2V2 MODES</div>
+    <div class="nel-section-title">UNRANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" onclick="selectPlayMode('2v2_ranked')">
-        <div class="nel-card-img" id="nel2v2RankedImg"></div>
+      <div class="nel-card" onclick="selectPlayMode('unranked_1v1')">
+        <div class="nel-card-img" id="nelUnranked1v1Img"></div>
         <div class="nel-card-content">
-          <div class="nel-card-name">RANKED 2V2</div>
-          <div class="nel-card-desc">Team up for glory</div>
-          <div class="nel-card-badge ranked">🏆</div>
+          <div class="nel-card-name">1V1 UNRANKED</div>
+          <div class="nel-card-desc">Casual matchmaking</div>
+          <div class="nel-card-badge">🎮</div>
         </div>
       </div>
-      <div class="nel-card" onclick="selectPlayMode('2v2_unranked')">
-        <div class="nel-card-img" id="nel2v2UnrankedImg"></div>
+      <div class="nel-card" onclick="selectPlayMode('unranked_2v2')">
+        <div class="nel-card-img" id="nelUnranked2v2Img"></div>
         <div class="nel-card-content">
-          <div class="nel-card-name">UNRANKED 2V2</div>
+          <div class="nel-card-name">2V2 UNRANKED</div>
           <div class="nel-card-desc">Fun with friends</div>
           <div class="nel-card-badge">🎮</div>
         </div>
@@ -689,21 +690,34 @@ Sign in with Google
     </div>
   </div>
   <div class="nel-section">
-    <div class="nel-section-title">EXTRAS</div>
+    <div class="nel-section-title">VS COMPUTER</div>
     <div class="nel-cards">
-      <div class="nel-card" onclick="selectPlayMode('vs_computer')">
-        <div class="nel-card-img" id="nelVsComputerImg"></div>
+      <div class="nel-card" onclick="selectPlayMode('vs_comp_1v1')">
+        <div class="nel-card-img" id="nelVsComp1v1Img"></div>
         <div class="nel-card-content">
-          <div class="nel-card-name">VS COMPUTER</div>
+          <div class="nel-card-name">1V1 VS COMPUTER</div>
           <div class="nel-card-desc">Train against AI</div>
           <div class="nel-card-badge">🤖</div>
         </div>
       </div>
-      <div class="nel-card" onclick="selectPlayMode('training')">
+      <div class="nel-card" onclick="selectPlayMode('vs_comp_2v2')">
+        <div class="nel-card-img" id="nelVsComp2v2Img"></div>
+        <div class="nel-card-content">
+          <div class="nel-card-name">2V2 VS COMPUTER</div>
+          <div class="nel-card-desc">Team + AI vs AI</div>
+          <div class="nel-card-badge">🤖</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nel-section">
+    <div class="nel-section-title">TRAINING</div>
+    <div class="nel-cards">
+      <div class="nel-card full-width" onclick="selectPlayMode('training')">
         <div class="nel-card-img" id="nelTrainingImg"></div>
         <div class="nel-card-content">
-          <div class="nel-card-name">TRAINING</div>
-          <div class="nel-card-desc">Practice your skills</div>
+          <div class="nel-card-name">SOLO TRAINING</div>
+          <div class="nel-card-desc">Practice your skills — free play, no opponents</div>
           <div class="nel-card-badge">⚽</div>
         </div>
       </div>
@@ -1247,21 +1261,24 @@ function showNelPlayMenu() {
     if (charData) {
       const imgUrl = IMAGE_DATA[charData.imgKey];
       // Set images on cards
-      document.getElementById('nel1v1RankedImg').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nel1v1RankedImg').style.backgroundSize = 'cover';
-      document.getElementById('nel1v1RankedImg').style.backgroundPosition = 'top center';
-      document.getElementById('nel1v1UnrankedImg').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nel1v1UnrankedImg').style.backgroundSize = 'cover';
-      document.getElementById('nel1v1UnrankedImg').style.backgroundPosition = 'top center';
-      document.getElementById('nel2v2RankedImg').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nel2v2RankedImg').style.backgroundSize = 'cover';
-      document.getElementById('nel2v2RankedImg').style.backgroundPosition = 'top center';
-      document.getElementById('nel2v2UnrankedImg').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nel2v2UnrankedImg').style.backgroundSize = 'cover';
-      document.getElementById('nel2v2UnrankedImg').style.backgroundPosition = 'top center';
-      document.getElementById('nelVsComputerImg').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelVsComputerImg').style.backgroundSize = 'cover';
-      document.getElementById('nelVsComputerImg').style.backgroundPosition = 'top center';
+      document.getElementById('nelRanked1v1Img').style.backgroundImage = 'url(' + imgUrl + ')';
+      document.getElementById('nelRanked1v1Img').style.backgroundSize = 'cover';
+      document.getElementById('nelRanked1v1Img').style.backgroundPosition = 'top center';
+      document.getElementById('nelRanked2v2Img').style.backgroundImage = 'url(' + imgUrl + ')';
+      document.getElementById('nelRanked2v2Img').style.backgroundSize = 'cover';
+      document.getElementById('nelRanked2v2Img').style.backgroundPosition = 'top center';
+      document.getElementById('nelUnranked1v1Img').style.backgroundImage = 'url(' + imgUrl + ')';
+      document.getElementById('nelUnranked1v1Img').style.backgroundSize = 'cover';
+      document.getElementById('nelUnranked1v1Img').style.backgroundPosition = 'top center';
+      document.getElementById('nelUnranked2v2Img').style.backgroundImage = 'url(' + imgUrl + ')';
+      document.getElementById('nelUnranked2v2Img').style.backgroundSize = 'cover';
+      document.getElementById('nelUnranked2v2Img').style.backgroundPosition = 'top center';
+      document.getElementById('nelVsComp1v1Img').style.backgroundImage = 'url(' + imgUrl + ')';
+      document.getElementById('nelVsComp1v1Img').style.backgroundSize = 'cover';
+      document.getElementById('nelVsComp1v1Img').style.backgroundPosition = 'top center';
+      document.getElementById('nelVsComp2v2Img').style.backgroundImage = 'url(' + imgUrl + ')';
+      document.getElementById('nelVsComp2v2Img').style.backgroundSize = 'cover';
+      document.getElementById('nelVsComp2v2Img').style.backgroundPosition = 'top center';
       document.getElementById('nelTrainingImg').style.backgroundImage = 'url(' + imgUrl + ')';
       document.getElementById('nelTrainingImg').style.backgroundSize = 'cover';
       document.getElementById('nelTrainingImg').style.backgroundPosition = 'top center';
@@ -1278,12 +1295,12 @@ function selectPlayMode(mode) {
   if (!char) { alert('Select a character first!'); return; }
   if (mode === 'training') {
     startTrainingMode(char.character_key, char.rarity);
-  } else if (mode === 'vs_computer') {
+  } else if (mode === 'vs_comp_1v1') {
     selectPlayCharacter(char.character_key, char.rarity, '1v1');
-  } else if (mode === '2v2_ranked' || mode === '2v2_unranked') {
+  } else if (mode === 'vs_comp_2v2') {
     selectPlayCharacter(char.character_key, char.rarity, '2v2');
   } else {
-    alert(mode + ' matchmaking coming soon! For now, play VS Computer or 2v2 to train.');
+    alert(mode + ' matchmaking coming soon! For now, play VS Computer or Training.');
   }
 }
 
