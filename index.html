@@ -2147,7 +2147,7 @@ class Player {
 
 // ─── Setup & Collision ──────────────────────────────────────
 let players = []; let ball = new Ball();
-function initPlayers() { players = []; players.push(new Player(150, HEIGHT / 2, 'blue', playerCharacter)); players.push(new Player(WIDTH - 150, HEIGHT / 2, 'red', aiCharacter)); }
+function initPlayers() { players = []; players.push(new Player(150, HEIGHT / 2, 'blue', playerCharacter, true)); players.push(new Player(WIDTH - 150, HEIGHT / 2, 'red', aiCharacter, false)); }
 function initPlayers2v2() {
   players = [];
   // Blue team: player + AI teammate (positioned vertically)
@@ -2285,6 +2285,19 @@ function endGame(text, isWin) {
   requestAnimationFrame(() => {
     winner.classList.add('active');
   });
+}
+
+function returnToMenu() {
+  document.getElementById('winner').style.display = 'none';
+  document.getElementById('winner').classList.remove('active');
+  document.getElementById('gameCanvas').style.display = 'none';
+  document.getElementById('ui').style.display = 'none';
+  document.getElementById('controls').style.display = 'none';
+  document.body.style.cursor = 'default';
+  gameState = 'menu';
+  gameOver = false;
+  scores = { blue: 0, red: 0 };
+  showMainMenu();
 }
 
 // ─── Input Handling ──────────────────────────────────────────
