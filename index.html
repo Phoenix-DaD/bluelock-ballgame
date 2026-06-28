@@ -507,7 +507,7 @@ canvas {
 .vs-choosing { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 700; font-family: 'Oswald', sans-serif; color: rgba(255,255,255,0.5); letter-spacing: 8px; text-transform: uppercase; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
 .vs-choosing.show { opacity: 1; }
 .vs-choosing.hide { opacity: 0; }
-.vs-found { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; letter-spacing: 6px; text-transform: uppercase; opacity: 0; transition: all 0.4s ease; pointer-events: none; text-shadow: 0 0 30px rgba(255,23,68,0.6); }
+.vs-found { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; letter-spacing: 6px; text-transform: uppercase; opacity: 0; transition: all 0.4s ease; pointer-events: none; text-shadow: 0 0 30px rgba(255,23,68,0.6); z-index: 30; }
 .vs-found.active { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 .vs-found::before { content: '◆'; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); color: #ff1744; font-size: 12px; }
 .vs-found::after { content: '◆'; position: absolute; right: -30px; top: 50%; transform: translateY(-50%); color: #ff1744; font-size: 12px; }
