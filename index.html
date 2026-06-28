@@ -1245,10 +1245,14 @@ function selectPlayMode(mode) {
   if (mode === 'vs_computer' || mode === 'training') {
     // VS computer - go to character select then play
     const char = playerData.characters[0];
-    selectPlayCharacter(char.character_key, char.rarity);
+    selectPlayCharacter(char.character_key, char.rarity, '1v1');
+  } else if (mode === '2v2_ranked' || mode === '2v2_unranked') {
+    // 2v2 mode - create AI teammate vs 2 AI opponents
+    const char = playerData.characters[0];
+    selectPlayCharacter(char.character_key, char.rarity, '2v2');
   } else {
-    // Multiplayer modes - show matchmaking (placeholder for now)
-    alert(mode + ' matchmaking coming soon! For now, play VS Computer to train.');
+    // 1v1 multiplayer modes - show matchmaking (placeholder for now)
+    alert(mode + ' matchmaking coming soon! For now, play VS Computer or 2v2 to train.');
   }
 }
 
