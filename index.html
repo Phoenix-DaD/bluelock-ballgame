@@ -181,7 +181,7 @@ canvas {
 .friend-invite-row .menu-btn { width: auto; padding: 12px 24px; margin: 0; font-size: 14px; border-radius: 8px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a1a; }
 .party-invite-list { display: flex; flex-direction: column; gap: 8px; }
 
-/* NEL Play Menu */
+/* Neo Egoist League Play Menu */
 #nelPlayMenu { padding: 20px 0; }
 #nelPlayMenu h1 { font-size: 32px; margin-bottom: 4px; }
 .nel-grid { width: 100%; max-width: 860px; display: flex; flex-direction: column; gap: 16px; padding: 0 20px; overflow-y: auto; max-height: calc(100vh - 200px); }
@@ -641,9 +641,9 @@ Sign in with Google
 <div class="login-note">Note: Google OAuth must be configured in your Supabase Authentication settings for sign-in to work.</div>
 </div>
 
-<!-- NEL Play Menu -->
+<!-- Neo Egoist League Play Menu -->
 <div id="nelPlayMenu" class="screen-overlay hidden">
-<h1 style="font-size:28px;margin-bottom:4px;">NEL <span style="color:#ffd700;">EGOIST LEAGUE</span></h1>
+<h1 style="font-size:28px;margin-bottom:4px;">Neo <span style="color:#ffd700;">EGOIST LEAGUE</span></h1>
 <div class="subtitle">Choose your battlefield</div>
 <div class="nel-grid" id="nelGrid">
   <div class="nel-section">
@@ -1230,7 +1230,7 @@ function goToPlay() {
     alert('You need to roll a character first! Go to CUSTOMIZE CHARACTER menu.');
     return;
   }
-  // Show the new NEL Play Menu instead of going directly to character select
+  // Show the new Neo Play Menu instead of going directly to character select
   showNelPlayMenu();
 }
 function goToCharacter() { showCharacterCollection(); }
@@ -1240,7 +1240,7 @@ function goToFriends() { showFriendsScreen(); }
 function showNelPlayMenu() {
   hideAllScreens(); gameState = 'nelPlay';
   document.getElementById('nelPlayMenu').classList.remove('hidden');
-  // Set character images on NEL cards
+  // Set character images on Neo cards
   const char = playerData.characters[0];
   if (char) {
     const charData = CHARACTERS[char.character_key];
