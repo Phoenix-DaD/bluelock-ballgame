@@ -2109,6 +2109,7 @@ class Player {
     this.dribbleDurationMax = character ? character.modifiers.dribbleDuration : DRIBBLE_DURATION;
     this.aiReactDelay = 0; this.aiTackleWindup = 0; this.aiDribbleWanted = false; this.aiPanic = 0;
     this.aiOvershoot = 0; this.aiLastOppDist = 999; this.aiTackleTarget = 0;
+    this.aiRole = null; // '1v1' | 'teammate' | 'team2'
   }
   get isDashing() { return this.dashTimer > 0; }
   get isDribbling() { return this.dribbleTimer > 0; }
@@ -2138,20 +2139,16 @@ class Player {
       if (ball.carrier === null) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
       else if (ball.carrier === this) this.hasBall = true; else this.hasBall = false;
     }
-    if (this.team === 'red' && !gameOver) this.aiBehavior();
-    if (this.team === 'blue' && !this.isHuman && !gameOver) this.aiBehavior();
+    if (!this.isHuman && !gameOver) {
+      if (this.aiRole === '1v1') this.aiBehavior1v1();
+      else if (this.aiRole === 'teammate') this.aiBehaviorTeammate();
+      else if (this.aiRole === 'team2') this.aiBehaviorTeam2();
+    }
   }
   kick(vx, vy) { if (!this.hasBall) return; const mag = Math.hypot(vx, vy); if (mag === 0) return; ball.release(); this.hasBall = false; ball.x = this.x + (vx / mag) * (this.radius + ball.radius + 6); ball.y = this.y + (vy / mag) * (this.radius + ball.radius + 6); ball.vx = (vx / mag) * this.shootPower; ball.vy = (vy / mag) * this.shootPower; this.loseControl = 8; new Particle(ball.x, ball.y, '#fff', 5); new Particle(ball.x, ball.y, this.character ? this.character.color : '#00d4ff', 3); }
   dash(dirX, dirY) { if (this.dashCooldown > 0 || this.stunned > 0 || this.loseControl > 0) return; const mag = Math.hypot(dirX, dirY); if (mag === 0) return; this.dashCooldown = this.dashCooldownMax; this.dashTimer = DASH_DURATION; this.vx = (dirX / mag) * DASH_FORCE; this.vy = (dirY / mag) * DASH_FORCE; new Particle(this.x, this.y, this.character ? this.character.color : '#ff1744', 8); }
   dribble() { if (this.dribbleCooldown > 0 || this.stunned > 0) return; this.dribbleTimer = this.dribbleDurationMax; this.dribbleCooldown = this.dribbleCooldownMax; }
-  aiBehavior() {
-    const opponents = players.filter(p => p.team !== this.team);
-    const nearestOpp = opponents.reduce((closest, p) => {
-      const d = dist(this.x, this.y, p.x, p.y);
-      return (!closest || d < dist(this.x, this.y, closest.x, closest.y)) ? p : closest;
-    }, null);
-    if (!nearestOpp) return;
-    const opp = nearestOpp;
+  _getDiffParams() {
     const diff = DIFFICULTY[selectedDifficulty];
     const behavior = this.character ? (this.character.behavior || 'allrounder') : 'allrounder';
     let aiAccel = diff.aiAccel, aiDribbleDist = diff.aiDribbleDist, aiDribbleMiss = diff.aiDribbleMiss;
@@ -2161,6 +2158,15 @@ class Player {
     if (behavior === 'dribbler') { aiDribbleDist *= 1.4; aiDribbleMiss *= 0.5; aiShootSpread *= 1.3; aiShootPower *= 0.85; shootThreshold = 160; aiTackleRange *= 0.7; }
     else if (behavior === 'defender') { aiTackleRange *= 1.3; aiTackleWindupMin = Math.max(2, aiTackleWindupMin * 0.6); aiTackleWindupMax = Math.max(5, aiTackleWindupMax * 0.6); aiDribbleMiss *= 1.5; aiChaseSpd *= 1.15; aiOvershootChance *= 1.5; aiSideStep *= 1.3; }
     else if (behavior === 'forward') { aiAccel *= 1.2; aiShootPower *= 1.2; shootThreshold = 280; aiDribbleDist *= 0.6; aiDribbleMiss *= 1.8; aiTackleRange *= 0.8; aiSideStep *= 0.7; }
+    return { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, shootThreshold, diff };
+  }
+  _clampSpeed() { const maxSpd = this.hasBall ? this.dribbleSpeed : this.maxSpeed; const spd = Math.hypot(this.vx, this.vy); if (spd > maxSpd && !this.isDashing) { this.vx = (this.vx / spd) * maxSpd; this.vy = (this.vy / spd) * maxSpd; } }
+  // ─── 1v1 AI: Smart single opponent ───────────────────────────────
+  aiBehavior1v1() {
+    const human = players.find(p => p.team !== this.team && p.isHuman);
+    const opp = human || players.find(p => p.team !== this.team);
+    if (!opp) return;
+    const { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, shootThreshold, diff } = this._getDiffParams();
     const oppDist = dist(this.x, this.y, opp.x, opp.y); const oppClosing = oppDist < this.aiLastOppDist; this.aiLastOppDist = oppDist;
     if (this.hasBall) {
       const targetX = this.team === 'red' ? 80 : WIDTH - 80, targetY = HEIGHT / 2 + Math.sin(Date.now() * 0.002) * 30;
@@ -2171,23 +2177,150 @@ class Player {
       if (!opp.isDashing || oppDist > aiDribbleDist + 50) this.aiDribbleWanted = false;
       const shootX = this.team === 'red' ? 0 : WIDTH;
       if ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold)) {
-        const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread;
+        const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread * (oppDist > 150 ? 1 : 0.3);
         const sx = shootX - this.x, sy = goalY - this.y, angle = Math.atan2(sy, sx), power = aiShootPower + Math.random() * 3, mag2 = Math.hypot(sx, sy);
         ball.release(); this.hasBall = false; ball.x = this.x + (sx / mag2) * (this.radius + ball.radius + 6); ball.y = this.y + (sy / mag2) * (this.radius + ball.radius + 6); ball.vx = Math.cos(angle) * power; ball.vy = Math.sin(angle) * power; this.loseControl = 8; return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
     } else {
       let targetX, targetY;
-      if (ball.carrier && ball.carrier.team !== this.team) { targetX = ball.carrier.x + ball.carrier.vx * diff.aiPredict; targetY = ball.carrier.y + ball.carrier.vy * diff.aiPredict; const contactDist = this.radius + ball.carrier.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
+      if (ball.carrier && ball.carrier.team !== this.team) {
+        targetX = ball.carrier.x + ball.carrier.vx * diff.aiPredict * 1.5;
+        targetY = ball.carrier.y + ball.carrier.vy * diff.aiPredict * 1.5;
+        const contactDist = this.radius + ball.carrier.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
         if (inTackleRange) { if (this.aiTackleWindup === 0) this.aiTackleTarget = aiTackleWindupMin + Math.floor(Math.random() * (aiTackleWindupMax - aiTackleWindupMin)); this.aiTackleWindup++; } else { this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
         if (this.aiTackleWindup >= this.aiTackleTarget && this.aiTackleTarget > 0) { if (this.dashCooldown <= 0 && this.loseControl <= 0 && !this.isDashing) this.dash(ball.carrier.x - this.x, ball.carrier.y - this.y); this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
-        if (Math.random() < aiOvershootChance && this.aiOvershoot === 0) this.aiOvershoot = 20 + Math.floor(Math.random() * 20);
+      } else if (!ball.carrier) {
+        const timeToBall = dist(this.x, this.y, ball.x, ball.y) / (aiChaseSpd * 20 + 0.1);
+        targetX = ball.x + ball.vx * timeToBall;
+        targetY = ball.y + ball.vy * timeToBall;
+        if (Math.random() < 0.3) { this.aiOvershoot = 5 + Math.floor(Math.random() * 10); }
+        this.aiTackleWindup = 0;
       } else { targetX = ball.x + ball.vx * 2; targetY = ball.y + ball.vy * 2; this.aiTackleWindup = 0; }
       if (this.aiOvershoot > 0) { targetX += (opp.x - this.x) * 0.8; targetY += (opp.y - this.y) * 0.8; }
       if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) ? aiChaseSpd : 0.32; this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
+      const goalX = this.team === 'red' ? WIDTH : 0;
+      if (opp.hasBall && Math.abs(opp.x - goalX) < 200) {
+        const gx = goalX, gy = HEIGHT / 2;
+        const dgx = gx - this.x, dgy = gy - this.y, dg = Math.hypot(dgx, dgy);
+        if (dg > 5) { this.vx += (dgx / dg) * aiAccel * 0.8; this.vy += (dgy / dg) * aiAccel * 0.8; }
+      }
     }
-    const maxSpd = this.hasBall ? this.dribbleSpeed : this.maxSpeed; const spd = Math.hypot(this.vx, this.vy);
-    if (spd > maxSpd && !this.isDashing) { this.vx = (this.vx / spd) * maxSpd; this.vy = (this.vy / spd) * maxSpd; }
+    this._clampSpeed();
+  }
+  // ─── Teammate AI: Supportive, on human's team ────────────────────
+  aiBehaviorTeammate() {
+    const human = players.find(p => p.team === this.team && p.isHuman);
+    const opponents = players.filter(p => p.team !== this.team);
+    const nearestOpp = opponents.reduce((closest, p) => { const d = dist(this.x, this.y, p.x, p.y); return (!closest || d < dist(this.x, this.y, closest.x, closest.y)) ? p : closest; }, null);
+    const opp = nearestOpp || (opponents.length > 0 ? opponents[0] : null);
+    const { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, shootThreshold, diff } = this._getDiffParams();
+    if (this.hasBall) {
+      const targetX = this.team === 'red' ? 80 : WIDTH - 80, targetY = HEIGHT / 2;
+      const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy);
+      if (d > 5) { this.vx += (dx / d) * aiAccel; this.vy += (dy / d) * aiAccel; }
+      if (opp && opp.isDashing) { if (this.dribbleCooldown <= 0) this.dribble(); }
+      const shootX = this.team === 'red' ? 0 : WIDTH;
+      if ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold)) {
+        const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread;
+        const sx = shootX - this.x, sy = goalY - this.y, angle = Math.atan2(sy, sx), power = aiShootPower + Math.random() * 3, mag2 = Math.hypot(sx, sy);
+        ball.release(); this.hasBall = false; ball.x = this.x + (sx / mag2) * (this.radius + ball.radius + 6); ball.y = this.y + (sy / mag2) * (this.radius + ball.radius + 6); ball.vx = Math.cos(angle) * power; ball.vy = Math.sin(angle) * power; this.loseControl = 8; return;
+      }
+    } else if (human && human.hasBall) {
+      const aheadX = human.x + (human.vx > 0 ? 80 : -80);
+      const idealY = human.y + (human.team === 'blue' ? -60 : 60);
+      let tx = aheadX, ty = idealY;
+      if (opp) { const odx = this.x - opp.x, ody = this.y - opp.y, od = Math.hypot(odx, ody); if (od > 0 && od < 150) { tx += (odx / od) * 100; ty += (ody / od) * 100; } }
+      const dtx = tx - this.x, dty = ty - this.y, dt = Math.hypot(dtx, dty);
+      if (dt > 5) { this.vx += (dtx / dt) * aiAccel * 0.7; this.vy += (dty / dt) * aiAccel * 0.7; }
+    } else if (ball.carrier && ball.carrier.team !== this.team) {
+      const targetX = ball.carrier.x + ball.carrier.vx * diff.aiPredict; const targetY = ball.carrier.y + ball.carrier.vy * diff.aiPredict;
+      const oppDist = opp ? dist(this.x, this.y, opp.x, opp.y) : 999;
+      const contactDist = this.radius + ball.carrier.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
+      if (inTackleRange) { if (this.aiTackleWindup === 0) this.aiTackleTarget = aiTackleWindupMin + Math.floor(Math.random() * (aiTackleWindupMax - aiTackleWindupMin)); this.aiTackleWindup++; } else { this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
+      if (this.aiTackleWindup >= this.aiTackleTarget && this.aiTackleTarget > 0) { if (this.dashCooldown <= 0 && this.loseControl <= 0 && !this.isDashing) this.dash(ball.carrier.x - this.x, ball.carrier.y - this.y); this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
+      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { this.vx += (dx / d) * aiChaseSpd; this.vy += (dy / d) * aiChaseSpd; } }
+    } else {
+      const targetX = ball.x + ball.vx * 2, targetY = ball.y + ball.vy * 2;
+      if (human && dist(human.x, human.y, ball.x, ball.y) < dist(this.x, this.y, ball.x, ball.y)) {
+        const tx = this.x + (this.x - ball.x) * 0.3 + (this.team === 'blue' ? 80 : -80);
+        const ty = HEIGHT / 2 + Math.sin(Date.now() * 0.003) * 100;
+        const dtx = tx - this.x, dty = ty - this.y, dt = Math.hypot(dtx, dty);
+        if (dt > 5) { this.vx += (dtx / dt) * aiAccel * 0.5; this.vy += (dty / dt) * aiAccel * 0.5; }
+      } else {
+        const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy);
+        if (d > 5) { this.vx += (dx / d) * aiChaseSpd; this.vy += (dy / d) * aiChaseSpd; }
+      }
+    }
+    this._clampSpeed();
+  }
+  // ─── Team2 AI: Coordinated 2-AI opponent team ────────────────────
+  aiBehaviorTeam2() {
+    const teammates = players.filter(p => p.team === this.team && p !== this);
+    const teammate = teammates.length > 0 ? teammates[0] : null;
+    const human = players.find(p => p.team !== this.team && p.isHuman);
+    const opponents = players.filter(p => p.team !== this.team);
+    const nearestOpp = opponents.reduce((closest, p) => { const d = dist(this.x, this.y, p.x, p.y); return (!closest || d < dist(this.x, this.y, closest.x, closest.y)) ? p : closest; }, null);
+    const opp = nearestOpp || (opponents.length > 0 ? opponents[0] : null);
+    const { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, shootThreshold, diff } = this._getDiffParams();
+    let myRole = 'presser';
+    if (teammate) {
+      const distToBall = dist(this.x, this.y, ball.x, ball.y);
+      const teammateDistToBall = dist(teammate.x, teammate.y, ball.x, ball.y);
+      if (distToBall > teammateDistToBall + 30) myRole = 'coverer';
+      if (human && human.hasBall && Math.abs(human.x - (this.team === 'red' ? 0 : WIDTH)) < 200) myRole = 'defender';
+    }
+    if (this.hasBall) {
+      const targetX = this.team === 'red' ? 80 : WIDTH - 80, targetY = HEIGHT / 2 + Math.sin(Date.now() * 0.002) * 30;
+      const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy);
+      if (d > 5) { this.vx += (dx / d) * aiAccel; this.vy += (dy / d) * aiAccel; }
+      if (teammate && !teammate.isHuman) {
+        const teammateAhead = (this.team === 'blue' && teammate.x > this.x) || (this.team === 'red' && teammate.x < this.x);
+        const distToTeammate = dist(this.x, this.y, teammate.x, teammate.y);
+        if (teammateAhead && distToTeammate < 250 && Math.random() < 0.08) {
+          const tx = teammate.x - this.x, ty = teammate.y - this.y, tangle = Math.atan2(ty, tx), tpower = 10 + Math.random() * 2;
+          ball.release(); this.hasBall = false; ball.vx = Math.cos(tangle) * tpower; ball.vy = Math.sin(tangle) * tpower; this.loseControl = 8; return;
+        }
+      }
+      if (opp && opp.isDashing && oppDist < aiDribbleDist + 20) { if (this.dribbleCooldown <= 0) this.dribble(); }
+      const shootX = this.team === 'red' ? 0 : WIDTH;
+      if ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold)) {
+        const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread * 0.5;
+        const sx = shootX - this.x, sy = goalY - this.y, angle = Math.atan2(sy, sx), power = aiShootPower + Math.random() * 3, mag2 = Math.hypot(sx, sy);
+        ball.release(); this.hasBall = false; ball.x = this.x + (sx / mag2) * (this.radius + ball.radius + 6); ball.y = this.y + (sy / mag2) * (this.radius + ball.radius + 6); ball.vx = Math.cos(angle) * power; ball.vy = Math.sin(angle) * power; this.loseControl = 8; return;
+      }
+      if (opp && oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
+    } else {
+      let targetX, targetY;
+      if (myRole === 'presser' || myRole === 'defender') {
+        if (ball.carrier && ball.carrier.team !== this.team) {
+          const oppDist = opp ? dist(this.x, this.y, opp.x, opp.y) : 999;
+          targetX = ball.carrier.x + ball.carrier.vx * diff.aiPredict * 1.2; targetY = ball.carrier.y + ball.carrier.vy * diff.aiPredict * 1.2;
+          const contactDist = this.radius + ball.carrier.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
+          if (inTackleRange) { if (this.aiTackleWindup === 0) this.aiTackleTarget = aiTackleWindupMin + Math.floor(Math.random() * (aiTackleWindupMax - aiTackleWindupMin)); this.aiTackleWindup++; } else { this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
+          if (this.aiTackleWindup >= this.aiTackleTarget && this.aiTackleTarget > 0) { if (this.dashCooldown <= 0 && this.loseControl <= 0 && !this.isDashing) this.dash(ball.carrier.x - this.x, ball.carrier.y - this.y); this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
+        } else if (!ball.carrier) {
+          const timeToBall = dist(this.x, this.y, ball.x, ball.y) / (aiChaseSpd * 20 + 0.1);
+          targetX = ball.x + ball.vx * timeToBall; targetY = ball.y + ball.vy * timeToBall;
+        } else { targetX = ball.x + ball.vx * 2; targetY = ball.y + ball.vy * 2; this.aiTackleWindup = 0; }
+      } else {
+        const otherOpp = opponents.find(p => p !== nearestOpp) || opp;
+        if (otherOpp) {
+          const goalX = this.team === 'red' ? 0 : WIDTH, goalY = HEIGHT / 2;
+          const ox = otherOpp.x, oy = otherOpp.y;
+          targetX = ox + (goalX - ox) * 0.4;
+          targetY = oy + (goalY - oy) * 0.4;
+        } else { targetX = ball.x + ball.vx * 2; targetY = ball.y + ball.vy * 2; }
+        this.aiTackleWindup = 0;
+      }
+      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) ? aiChaseSpd : 0.32; this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
+      if (human && human.hasBall && Math.abs(human.x - (this.team === 'red' ? 0 : WIDTH)) < 180) {
+        const gx = this.team === 'red' ? 40 : WIDTH - 40, gy = HEIGHT / 2;
+        const dgx = gx - this.x, dgy = gy - this.y, dg = Math.hypot(dgx, dgy);
+        if (dg > 5) { this.vx += (dgx / dg) * aiAccel * 0.6; this.vy += (dgy / dg) * aiAccel * 0.6; }
+      }
+    }
+    this._clampSpeed();
   }
   draw() {
     const charColor = this.character ? this.character.color : (this.team === 'blue' ? '#4A90E2' : '#ef5350');
@@ -2212,15 +2345,16 @@ class Player {
 
 // ─── Setup & Collision ──────────────────────────────────────
 let players = []; let ball = new Ball();
-function initPlayers() { players = []; players.push(new Player(150, HEIGHT / 2, 'blue', playerCharacter, true)); players.push(new Player(WIDTH - 150, HEIGHT / 2, 'red', aiCharacter, false)); }
+function initPlayers() { players = []; players.push(new Player(150, HEIGHT / 2, 'blue', playerCharacter, true)); players.push(new Player(WIDTH - 150, HEIGHT / 2, 'red', aiCharacter, false)); players[1].aiRole = '1v1'; }
 function initPlayers2v2() {
   players = [];
-  // Blue team: player + AI teammate (positioned vertically)
-  players.push(new Player(120, HEIGHT / 2 - 80, 'blue', playerCharacter, true));  // player (human controlled)
-  players.push(new Player(120, HEIGHT / 2 + 80, 'blue', teammateCharacter, false)); // AI teammate
-  // Red team: 2 AI opponents
+  players.push(new Player(120, HEIGHT / 2 - 80, 'blue', playerCharacter, true));
+  players.push(new Player(120, HEIGHT / 2 + 80, 'blue', teammateCharacter, false));
   players.push(new Player(WIDTH - 120, HEIGHT / 2 - 80, 'red', opponent1Character, false));
   players.push(new Player(WIDTH - 120, HEIGHT / 2 + 80, 'red', opponent2Character, false));
+  players[1].aiRole = 'teammate';
+  players[2].aiRole = 'team2';
+  players[3].aiRole = 'team2';
 }
 function initPlayersTraining() {
   players = [];
