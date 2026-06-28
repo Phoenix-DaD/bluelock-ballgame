@@ -498,6 +498,10 @@ canvas {
 .vs-char.active .vs-name { opacity: 1; transform: translateY(0); }
 .vs-char .vs-label { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 8px; opacity: 0; transition: all 0.4s ease 0.8s; }
 .vs-char.active .vs-label { opacity: 1; }
+.vs-team { display: flex; flex-direction: column; gap: 30px; align-items: center; }
+.vs-team .vs-char { margin: 0; }
+.vs-team .vs-char img { width: 160px; height: 220px; }
+.vs-team .vs-char .vs-name { font-size: 28px; margin-top: 12px; }
 .vs-divider { font-size: 80px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ff1744; text-shadow: 0 0 30px rgba(255,23,68,0.5); opacity: 0; transform: scale(0.3) rotate(-15deg); transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s; }
 .vs-divider.active { opacity: 1; transform: scale(1) rotate(0deg); }
 .vs-choosing { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 700; font-family: 'Oswald', sans-serif; color: rgba(255,255,255,0.5); letter-spacing: 8px; text-transform: uppercase; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -790,9 +794,26 @@ Sign in with Google
   <div class="vs-flash" id="vsFlash"></div>
   <div class="vs-choosing" id="vsChoosing">CHOOSING RIVAL...</div>
   <div class="vs-found" id="vsFound">MATCH FOUND</div>
-  <div class="vs-char" id="vsPlayer"><img id="vsPlayerImg" src="" alt=""><div class="vs-name" id="vsPlayerName"></div><div class="vs-label">YOU</div></div>
-  <div class="vs-divider" id="vsDivider">VS</div>
-  <div class="vs-char right" id="vsAI"><img id="vsAIImg" src="" alt=""><div class="vs-name" id="vsAIName"></div><div class="vs-label">RIVAL</div></div>
+  
+  <!-- 1v1 Layout -->
+  <div class="vs-layout-1v1" id="vsLayout1v1" style="display:flex;flex-direction:row;align-items:center;justify-content:center;">
+    <div class="vs-char" id="vsPlayer"><img id="vsPlayerImg" src="" alt=""><div class="vs-name" id="vsPlayerName"></div><div class="vs-label">YOU</div></div>
+    <div class="vs-divider" id="vsDivider">VS</div>
+    <div class="vs-char right" id="vsAI"><img id="vsAIImg" src="" alt=""><div class="vs-name" id="vsAIName"></div><div class="vs-label">RIVAL</div></div>
+  </div>
+  
+  <!-- 2v2 Layout -->
+  <div class="vs-layout-2v2" id="vsLayout2v2" style="display:none;flex-direction:row;align-items:center;justify-content:center;gap:60px;">
+    <div class="vs-team" id="vsTeamA">
+      <div class="vs-char" id="vsPlayer1"><img id="vsPlayer1Img" src="" alt=""><div class="vs-name" id="vsPlayer1Name"></div><div class="vs-label">YOU</div></div>
+      <div class="vs-char" id="vsTeammate1"><img id="vsTeammate1Img" src="" alt=""><div class="vs-name" id="vsTeammate1Name"></div><div class="vs-label">TEAMMATE</div></div>
+    </div>
+    <div class="vs-divider" id="vsDivider2v2">VS</div>
+    <div class="vs-team" id="vsTeamB">
+      <div class="vs-char right" id="vsOpponent1"><img id="vsOpponent1Img" src="" alt=""><div class="vs-name" id="vsOpponent1Name"></div><div class="vs-label">RIVAL</div></div>
+      <div class="vs-char right" id="vsOpponent2"><img id="vsOpponent2Img" src="" alt=""><div class="vs-name" id="vsOpponent2Name"></div><div class="vs-label">RIVAL</div></div>
+    </div>
+  </div>
 </div>
 
 <!-- Roll Animation - Ego Awakening -->
@@ -931,6 +952,9 @@ let playerData = { characters: [], stats: null };
 let selectedDifficulty = 'medium';
 let playerCharacter = null;
 let aiCharacter = null;
+let teammateCharacter = null;
+let opponent1Character = null;
+let opponent2Character = null;
 let gameState = 'login';
 let gameOver = false;
 let scores = { blue: 0, red: 0 };
@@ -1679,98 +1703,177 @@ function getVsNameClass(charKey) {
   return map[charKey] || '';
 }
 
-function selectPlayCharacter(charKey, rarity) {
+function selectPlayCharacter(charKey, rarity, mode) {
+  // mode: '1v1', '2v2', 'vs_computer'
+  const gameMode = mode || '1v1';
+  const is2v2 = gameMode === '2v2';
+  
   playerCharacter = createCharacterWithRarity(charKey, rarity);
   const allKeys = Object.keys(CHARACTERS).filter(k => k !== charKey);
-  const aiKey = allKeys[Math.floor(Math.random() * allKeys.length)];
-  const aiRarity = rollRarity();
-  aiCharacter = createCharacterWithRarity(aiKey, aiRarity);
+  
+  if (is2v2) {
+    // 2v2: create teammate + 2 opponents
+    const teammateKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+    teammateCharacter = createCharacterWithRarity(teammateKey, rollRarity());
+    const remainingKeys = allKeys.filter(k => k !== teammateKey);
+    const opp1Key = remainingKeys[Math.floor(Math.random() * remainingKeys.length)];
+    opponent1Character = createCharacterWithRarity(opp1Key, rollRarity());
+    const remainingKeys2 = remainingKeys.filter(k => k !== opp1Key);
+    const opp2Key = remainingKeys2[Math.floor(Math.random() * remainingKeys2.length)];
+    opponent2Character = createCharacterWithRarity(opp2Key, rollRarity());
+  } else {
+    // 1v1: single opponent
+    const aiKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+    const aiRarity = rollRarity();
+    aiCharacter = createCharacterWithRarity(aiKey, aiRarity);
+    teammateCharacter = null;
+    opponent1Character = null;
+    opponent2Character = null;
+  }
 
   hideAllScreens();
 
   const vsScreen = document.getElementById('vsScreen');
-  const vsPlayer = document.getElementById('vsPlayer');
-  const vsAI = document.getElementById('vsAI');
-  const vsDivider = document.getElementById('vsDivider');
+  const vsLayout1v1 = document.getElementById('vsLayout1v1');
+  const vsLayout2v2 = document.getElementById('vsLayout2v2');
   const vsChoosing = document.getElementById('vsChoosing');
-  const aiImg = document.getElementById('vsAIImg');
-  const aiName = document.getElementById('vsAIName');
 
-  // Set up player (static, no cycling)
-  document.getElementById('vsPlayerImg').src = IMAGE_DATA[playerCharacter.imgKey];
-  const playerNameEl = document.getElementById('vsPlayerName');
-  playerNameEl.textContent = playerCharacter.name;
-  playerNameEl.className = 'vs-name ' + getVsNameClass(playerCharacter.imgKey);
-
-  // Reset animation states
-  vsPlayer.classList.remove('active');
-  vsAI.classList.remove('active');
-  vsDivider.classList.remove('active');
-  vsChoosing.classList.remove('show', 'hide');
-  document.getElementById('vsFound').classList.remove('active');
-  document.getElementById('vsFlash').classList.remove('active');
-  aiName.className = 'vs-name';
-
-  // Show VS screen
-  vsScreen.style.display = 'flex';
-
-  // Phase 1: Player slides in
-  requestAnimationFrame(() => {
-    vsPlayer.classList.add('active');
-  });
-
-  // Phase 2: Show "CHOOSING RIVAL" and cycle opponents
-  setTimeout(() => {
-    vsChoosing.classList.add('show');
-
-    const rivalKeys = allKeys;
-    let cycleIndex = 0;
-    const cycleInterval = setInterval(() => {
-      const key = rivalKeys[cycleIndex % rivalKeys.length];
-      const data = CHARACTERS[key];
-      aiImg.src = IMAGE_DATA[data.imgKey];
-      aiName.textContent = data.name;
-      aiName.className = 'vs-name ' + getVsNameClass(key);
-      cycleIndex++;
-    }, 180);
-
-    // Stop cycling and reveal final opponent
+  if (is2v2) {
+    // 2v2 VS Screen
+    vsLayout1v1.style.display = 'none';
+    vsLayout2v2.style.display = 'flex';
+    
+    // Set up team A (player + teammate)
+    document.getElementById('vsPlayer1Img').src = IMAGE_DATA[playerCharacter.imgKey];
+    const p1Name = document.getElementById('vsPlayer1Name');
+    p1Name.textContent = playerCharacter.name;
+    p1Name.className = 'vs-name ' + getVsNameClass(playerCharacter.imgKey);
+    
+    document.getElementById('vsTeammate1Img').src = IMAGE_DATA[teammateCharacter.imgKey];
+    const t1Name = document.getElementById('vsTeammate1Name');
+    t1Name.textContent = teammateCharacter.name;
+    t1Name.className = 'vs-name ' + getVsNameClass(teammateCharacter.imgKey);
+    
+    // Set up team B (2 opponents)
+    document.getElementById('vsOpponent1Img').src = IMAGE_DATA[opponent1Character.imgKey];
+    const o1Name = document.getElementById('vsOpponent1Name');
+    o1Name.textContent = opponent1Character.name;
+    o1Name.className = 'vs-name ' + getVsNameClass(opponent1Character.imgKey);
+    
+    document.getElementById('vsOpponent2Img').src = IMAGE_DATA[opponent2Character.imgKey];
+    const o2Name = document.getElementById('vsOpponent2Name');
+    o2Name.textContent = opponent2Character.name;
+    o2Name.className = 'vs-name ' + getVsNameClass(opponent2Character.imgKey);
+    
+    // Reset animation states
+    document.getElementById('vsPlayer1').classList.remove('active');
+    document.getElementById('vsTeammate1').classList.remove('active');
+    document.getElementById('vsOpponent1').classList.remove('active');
+    document.getElementById('vsOpponent2').classList.remove('active');
+    document.getElementById('vsDivider2v2').classList.remove('active');
+    
+    vsScreen.style.display = 'flex';
+    
+    // Animate team A sliding in
+    requestAnimationFrame(() => {
+      document.getElementById('vsPlayer1').classList.add('active');
+      setTimeout(() => document.getElementById('vsTeammate1').classList.add('active'), 200);
+    });
+    
+    // After cycling, reveal team B
     setTimeout(() => {
-      clearInterval(cycleInterval);
-      vsChoosing.classList.remove('show');
-      vsChoosing.classList.add('hide');
-
-      // DRAMATIC REVEAL: Flash!
-      const vsFlash = document.getElementById('vsFlash');
-      vsFlash.classList.add('active');
-      setTimeout(() => { vsFlash.classList.remove('active'); }, 400);
-
-      // Set final opponent
-      aiImg.src = IMAGE_DATA[aiCharacter.imgKey];
-      aiName.textContent = aiCharacter.name;
-      aiName.className = 'vs-name ' + getVsNameClass(aiCharacter.imgKey);
-
-      // "MATCH FOUND" pops up
-      const vsFound = document.getElementById('vsFound');
-      vsFound.classList.add('active');
-      setTimeout(() => { vsFound.classList.remove('active'); }, 800);
-
-      // Slide in opponent and VS divider
-      requestAnimationFrame(() => {
-        vsAI.classList.add('active');
-      });
+      vsChoosing.classList.add('show');
       setTimeout(() => {
-        vsDivider.classList.add('active');
-      }, 300);
-    }, 1500);
-  }, 600);
+        vsChoosing.classList.remove('show');
+        vsChoosing.classList.add('hide');
+        
+        const vsFlash = document.getElementById('vsFlash');
+        vsFlash.classList.add('active');
+        setTimeout(() => vsFlash.classList.remove('active'), 400);
+        
+        const vsFound = document.getElementById('vsFound');
+        vsFound.classList.add('active');
+        setTimeout(() => vsFound.classList.remove('active'), 800);
+        
+        requestAnimationFrame(() => {
+          document.getElementById('vsOpponent1').classList.add('active');
+          setTimeout(() => document.getElementById('vsOpponent2').classList.add('active'), 200);
+        });
+        setTimeout(() => document.getElementById('vsDivider2v2').classList.add('active'), 300);
+      }, 1500);
+    }, 600);
+    
+  } else {
+    // 1v1 VS Screen (existing logic)
+    vsLayout1v1.style.display = 'flex';
+    vsLayout2v2.style.display = 'none';
+    
+    const vsPlayer = document.getElementById('vsPlayer');
+    const vsAI = document.getElementById('vsAI');
+    const vsDivider = document.getElementById('vsDivider');
+    const aiImg = document.getElementById('vsAIImg');
+    const aiName = document.getElementById('vsAIName');
 
-  // Phase 3: Start game after full animation (4.5s total for more drama)
-  setTimeout(() => {
-    vsScreen.style.display = 'none';
+    document.getElementById('vsPlayerImg').src = IMAGE_DATA[playerCharacter.imgKey];
+    const playerNameEl = document.getElementById('vsPlayerName');
+    playerNameEl.textContent = playerCharacter.name;
+    playerNameEl.className = 'vs-name ' + getVsNameClass(playerCharacter.imgKey);
+
     vsPlayer.classList.remove('active');
     vsAI.classList.remove('active');
     vsDivider.classList.remove('active');
+    vsChoosing.classList.remove('show', 'hide');
+    document.getElementById('vsFound').classList.remove('active');
+    document.getElementById('vsFlash').classList.remove('active');
+    aiName.className = 'vs-name';
+
+    vsScreen.style.display = 'flex';
+
+    requestAnimationFrame(() => { vsPlayer.classList.add('active'); });
+
+    setTimeout(() => {
+      vsChoosing.classList.add('show');
+      const rivalKeys = allKeys;
+      let cycleIndex = 0;
+      const cycleInterval = setInterval(() => {
+        const key = rivalKeys[cycleIndex % rivalKeys.length];
+        const data = CHARACTERS[key];
+        aiImg.src = IMAGE_DATA[data.imgKey];
+        aiName.textContent = data.name;
+        aiName.className = 'vs-name ' + getVsNameClass(key);
+        cycleIndex++;
+      }, 180);
+
+      setTimeout(() => {
+        clearInterval(cycleInterval);
+        vsChoosing.classList.remove('show');
+        vsChoosing.classList.add('hide');
+
+        const vsFlash = document.getElementById('vsFlash');
+        vsFlash.classList.add('active');
+        setTimeout(() => vsFlash.classList.remove('active'), 400);
+
+        aiImg.src = IMAGE_DATA[aiCharacter.imgKey];
+        aiName.textContent = aiCharacter.name;
+        aiName.className = 'vs-name ' + getVsNameClass(aiCharacter.imgKey);
+
+        const vsFound = document.getElementById('vsFound');
+        vsFound.classList.add('active');
+        setTimeout(() => vsFound.classList.remove('active'), 800);
+
+        requestAnimationFrame(() => { vsAI.classList.add('active'); });
+        setTimeout(() => vsDivider.classList.add('active'), 300);
+      }, 1500);
+    }, 600);
+  }
+
+  // Phase 3: Start game after full animation (4.5s total)
+  setTimeout(() => {
+    vsScreen.style.display = 'none';
+    document.getElementById('vsLayout1v1').style.display = 'none';
+    document.getElementById('vsLayout2v2').style.display = 'none';
+    document.querySelectorAll('.vs-char').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.vs-divider').forEach(el => el.classList.remove('active'));
     vsChoosing.classList.remove('hide');
     document.getElementById('vsFound').classList.remove('active');
 
@@ -1783,7 +1886,11 @@ function selectPlayCharacter(charKey, rarity) {
     scores = { blue: 0, red: 0 };
     updateScore();
     ball.reset(false);
-    initPlayers();
+    if (is2v2) {
+      initPlayers2v2();
+    } else {
+      initPlayers();
+    }
   }, 4500);
 }
 
@@ -1918,10 +2025,11 @@ class Ball {
 
 // ─── Player ──────────────────────────────────────────────────────────────────
 class Player {
-  constructor(x, y, team, character = null) {
+  constructor(x, y, team, character = null, isHuman = true) {
     this.x = x; this.y = y; this.vx = 0; this.vy = 0; this.radius = PLAYER_RADIUS; this.team = team;
     this.hasBall = false; this.dashCooldown = 0; this.dashTimer = 0; this.dribbleCooldown = 0; this.dribbleTimer = 0;
     this.loseControl = 0; this.stunned = 0; this.character = character;
+    this.isHuman = isHuman; // For 2v2: human player vs AI teammate
     this.maxSpeed = character ? character.modifiers.maxSpeed : MAX_SPEED;
     this.dribbleSpeed = character ? character.modifiers.dribbleSpeed : DRIBBLE_SPEED;
     this.shootPower = character ? character.modifiers.shootPower : SHOOT_POWER;
@@ -2026,6 +2134,15 @@ class Player {
 // ─── Setup & Collision ──────────────────────────────────────
 let players = []; let ball = new Ball();
 function initPlayers() { players = []; players.push(new Player(150, HEIGHT / 2, 'blue', playerCharacter)); players.push(new Player(WIDTH - 150, HEIGHT / 2, 'red', aiCharacter)); }
+function initPlayers2v2() {
+  players = [];
+  // Blue team: player + AI teammate (positioned vertically)
+  players.push(new Player(120, HEIGHT / 2 - 80, 'blue', playerCharacter, true));  // player (human controlled)
+  players.push(new Player(120, HEIGHT / 2 + 80, 'blue', teammateCharacter, false)); // AI teammate
+  // Red team: 2 AI opponents
+  players.push(new Player(WIDTH - 120, HEIGHT / 2 - 80, 'red', opponent1Character, false));
+  players.push(new Player(WIDTH - 120, HEIGHT / 2 + 80, 'red', opponent2Character, false));
+}
 initPlayers();
 const bluePlayer = () => players.find(p => p.team === 'blue');
 const redPlayer = () => players.find(p => p.team === 'red');
