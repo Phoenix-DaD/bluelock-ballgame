@@ -658,7 +658,7 @@ Sign in with Google
         <div class="nel-card-img" id="nelRanked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 RANKED</div>
-          <div class="nel-card-desc">Compete for rank points</div>
+          <div class="nel-card-desc">Ranked 1v1</div>
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
@@ -666,7 +666,7 @@ Sign in with Google
         <div class="nel-card-img" id="nelRanked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 RANKED</div>
-          <div class="nel-card-desc">Team up for glory</div>
+          <div class="nel-card-desc">Ranked 2v2</div>
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
@@ -679,7 +679,7 @@ Sign in with Google
         <div class="nel-card-img" id="nelUnranked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 UNRANKED</div>
-          <div class="nel-card-desc">Casual matchmaking</div>
+          <div class="nel-card-desc">Casual 1v1</div>
           <div class="nel-card-badge">🎮</div>
         </div>
       </div>
@@ -687,7 +687,7 @@ Sign in with Google
         <div class="nel-card-img" id="nelUnranked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 UNRANKED</div>
-          <div class="nel-card-desc">Fun with friends</div>
+          <div class="nel-card-desc">Casual 2v2</div>
           <div class="nel-card-badge">🎮</div>
         </div>
       </div>
@@ -700,7 +700,7 @@ Sign in with Google
         <div class="nel-card-img" id="nelVsComp1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 VS COMPUTER</div>
-          <div class="nel-card-desc">Train against AI</div>
+          <div class="nel-card-desc">Solo vs AI</div>
           <div class="nel-card-badge">🤖</div>
         </div>
       </div>
@@ -708,7 +708,7 @@ Sign in with Google
         <div class="nel-card-img" id="nelVsComp2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 VS COMPUTER</div>
-          <div class="nel-card-desc">Team + AI vs AI</div>
+          <div class="nel-card-desc">You + AI vs 2 AI</div>
           <div class="nel-card-badge">🤖</div>
         </div>
       </div>
@@ -2039,7 +2039,7 @@ class Particle {
 // ─── Ball ────────────────────────────────────────────────────────────────────
 class Ball {
   constructor() { this.reset(false); }
-  reset(respawn = true) { this.x = WIDTH / 2; this.y = HEIGHT / 2; this.vx = 0; this.vy = 0; this.radius = BALL_RADIUS; this.carrier = null; this.rotation = 0; if (respawn) initPlayers(); }
+  reset(respawn = true) { this.x = WIDTH / 2; this.y = HEIGHT / 2; this.vx = 0; this.vy = 0; this.radius = BALL_RADIUS; this.carrier = null; this.rotation = 0; if (respawn) { if (currentGameMode === '2v2') { initPlayers2v2(); } else if (currentGameMode === 'training') { initPlayersTraining(); } else { initPlayers(); } } }
   update() {
     if (this.carrier) {
       const speed = Math.hypot(this.carrier.vx, this.carrier.vy);
