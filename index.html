@@ -564,6 +564,35 @@ canvas {
 #winner.active .win-btn { opacity: 1; transform: translateY(0); }
 #winner .win-btn:hover { transform: scale(1.05); }
 
+/* Leave Button */
+#leaveBtn {
+  display: none;
+  width: 80%;
+  margin: 12px auto 0;
+  padding: 14px 0;
+  border: 2px solid #ff1744;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255,23,68,0.15), rgba(255,23,68,0.05));
+  color: #ff1744;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-shadow: 0 0 12px rgba(255,23,68,0.5);
+  box-shadow: 0 0 20px rgba(255,23,68,0.15), inset 0 0 20px rgba(255,23,68,0.05);
+  transition: all 0.3s ease;
+}
+#leaveBtn:hover {
+  background: linear-gradient(135deg, rgba(255,23,68,0.3), rgba(255,23,68,0.1));
+  box-shadow: 0 0 30px rgba(255,23,68,0.3), inset 0 0 30px rgba(255,23,68,0.1);
+  transform: scale(1.02);
+}
+#leaveBtn:active {
+  transform: scale(0.98);
+}
+
 /* Game Canvas Area - centered 900x550 */
 .game-area {
   position: relative;
@@ -581,7 +610,6 @@ canvas {
 </style>
 </head>
 <body>
-<button id="leaveBtn" onclick="leaveGame()" style="position:fixed; top:10px; left:10px; z-index:100; display:none; background:rgba(0,0,0,0.7); color:#ff4444; border:1px solid #ff4444; padding:6px 14px; border-radius:6px; font-family:'Oswald',sans-serif; font-size:13px; cursor:pointer;">✕ Leave</button>
 <div id="gameContainer">
 <div class="game-area">
 <canvas id="gameCanvas"></canvas>
@@ -599,6 +627,7 @@ canvas {
   <div class="win-bonus" id="winBonus"></div>
   <button class="win-btn" onclick="returnToMenu()">Continue</button>
 </div>
+<button id="leaveBtn" onclick="leaveGame()">✕ Leave Match</button>
 </div>
 
 <!-- Login Page -->
@@ -2395,21 +2424,23 @@ function gameLoop() {
       const maxSpd = hp.hasBall ? hp.dribbleSpeed : hp.maxSpeed;
       const spd = Math.hypot(hp.vx, hp.vy);
       if (spd > maxSpd) { hp.vx = (hp.vx / spd) * maxSpd; hp.vy = (hp.vy / spd) * maxSpd; }
-      // Track input for idle detection
-      if (ax !== 0 || ay !== 0) {
+      // Track input for idle detection (only in 2v2 multiplayer)
+      if ((ax !== 0 || ay !== 0) && currentGameMode === '2v2') {
         hp.lastInputTime = Date.now();
         if (!hp.isHuman && hp.wasHuman) hp.isHuman = true;
       }
     }
-    // Check idle status for all human players
-    const now = Date.now();
-    for (const p of players) {
-      if (p.isHuman && p.wasHuman && now - p.lastInputTime > IDLE_TIMEOUT) {
-        p.isHuman = false;
+    // Check idle status & forfeit (only in 2v2 multiplayer)
+    if (currentGameMode === '2v2') {
+      const now = Date.now();
+      for (const p of players) {
+        if (p.isHuman && p.wasHuman && now - p.lastInputTime > IDLE_TIMEOUT) {
+          p.isHuman = false;
+        }
       }
+      checkForfeit();
     }
     players.forEach(p => p.update()); ball.update(); Particle.updateAll(); resolveCollisions();
-    checkForfeit();
   }
   ctx.clearRect(0, 0, WIDTH, HEIGHT); drawField(); players.sort((a, b) => a.y - b.y); players.forEach(p => p.draw()); ball.draw(); Particle.drawAll(); drawShootIndicator();
   requestAnimationFrame(gameLoop);
