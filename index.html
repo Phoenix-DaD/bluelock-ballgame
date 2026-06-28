@@ -581,6 +581,7 @@ canvas {
 </style>
 </head>
 <body>
+<button id="leaveBtn" onclick="leaveGame()" style="position:fixed; top:10px; left:10px; z-index:100; display:none; background:rgba(0,0,0,0.7); color:#ff4444; border:1px solid #ff4444; padding:6px 14px; border-radius:6px; font-family:'Oswald',sans-serif; font-size:13px; cursor:pointer;">✕ Leave</button>
 <div id="gameContainer">
 <div class="game-area">
 <canvas id="gameCanvas"></canvas>
@@ -958,6 +959,8 @@ let opponent2Character = null;
 let gameState = 'login';
 let gameOver = false;
 let scores = { blue: 0, red: 0 };
+let currentGameMode = '1v1';
+const IDLE_TIMEOUT = 10000;
 const keys = {};
 const mouse = { x: 450, y: 275 };
 
@@ -1242,16 +1245,15 @@ let selectedPlayMode = null;
 
 function selectPlayMode(mode) {
   selectedPlayMode = mode;
-  if (mode === 'vs_computer' || mode === 'training') {
-    // VS computer - go to character select then play
-    const char = playerData.characters[0];
+  const char = playerData.characters[0];
+  if (!char) { alert('Select a character first!'); return; }
+  if (mode === 'training') {
+    startTrainingMode(char.character_key, char.rarity);
+  } else if (mode === 'vs_computer') {
     selectPlayCharacter(char.character_key, char.rarity, '1v1');
   } else if (mode === '2v2_ranked' || mode === '2v2_unranked') {
-    // 2v2 mode - create AI teammate vs 2 AI opponents
-    const char = playerData.characters[0];
     selectPlayCharacter(char.character_key, char.rarity, '2v2');
   } else {
-    // 1v1 multiplayer modes - show matchmaking (placeholder for now)
     alert(mode + ' matchmaking coming soon! For now, play VS Computer or 2v2 to train.');
   }
 }
@@ -1711,8 +1713,8 @@ function getVsNameClass(charKey) {
 
 function selectPlayCharacter(charKey, rarity, mode) {
   // mode: '1v1', '2v2', 'vs_computer'
-  const gameMode = mode || '1v1';
-  const is2v2 = gameMode === '2v2';
+  currentGameMode = mode || '1v1';
+  const is2v2 = currentGameMode === '2v2';
   
   playerCharacter = createCharacterWithRarity(charKey, rarity);
   const allKeys = Object.keys(CHARACTERS).filter(k => k !== charKey);
@@ -1886,6 +1888,7 @@ function selectPlayCharacter(charKey, rarity, mode) {
     document.getElementById('ui').style.display = 'block';
     document.getElementById('controls').style.display = 'block';
     document.getElementById('gameCanvas').style.display = 'block';
+    document.getElementById('leaveBtn').style.display = 'block';
     gameState = 'playing';
     document.body.style.cursor = 'crosshair';
     gameOver = false;
@@ -2011,11 +2014,21 @@ class Ball {
   checkGoal() {
     const goalTop = HEIGHT / 2 - GOAL_WIDTH / 2, goalBot = HEIGHT / 2 + GOAL_WIDTH / 2;
     if (this.x - this.radius < GOAL_DEPTH && this.y > goalTop && this.y < goalBot) {
-      scores.red++; triggerGoalEffect(); updateScore(); this.reset();
-      if (scores.red >= WIN_SCORE) endGame('Rival Wins — Your Ego Wasn\'t Enough', false);
+      if (currentGameMode === 'training') {
+        this.x = this.radius + GOAL_DEPTH + 2;
+        this.vx = Math.abs(this.vx) * 0.7;
+      } else {
+        scores.red++; triggerGoalEffect(); updateScore(); this.reset();
+        if (scores.red >= WIN_SCORE) endGame('Rival Wins — Your Ego Wasn\'t Enough', false);
+      }
     } else if (this.x + this.radius > WIDTH - GOAL_DEPTH && this.y > goalTop && this.y < goalBot) {
-      scores.blue++; triggerGoalEffect(); updateScore(); this.reset();
-      if (scores.blue >= WIN_SCORE) endGame('You Win — The Best Striker!', true);
+      if (currentGameMode === 'training') {
+        this.x = WIDTH - GOAL_DEPTH - this.radius - 2;
+        this.vx = -Math.abs(this.vx) * 0.7;
+      } else {
+        scores.blue++; triggerGoalEffect(); updateScore(); this.reset();
+        if (scores.blue >= WIN_SCORE) endGame('You Win — The Best Striker!', true);
+      }
     }
   }
   release() { this.carrier = null; }
@@ -2036,6 +2049,8 @@ class Player {
     this.hasBall = false; this.dashCooldown = 0; this.dashTimer = 0; this.dribbleCooldown = 0; this.dribbleTimer = 0;
     this.loseControl = 0; this.stunned = 0; this.character = character;
     this.isHuman = isHuman; // For 2v2: human player vs AI teammate
+    this.wasHuman = isHuman;  // Track if player was originally human (for forfeit)
+    this.lastInputTime = Date.now(); // For idle detection
     this.maxSpeed = character ? character.modifiers.maxSpeed : MAX_SPEED;
     this.dribbleSpeed = character ? character.modifiers.dribbleSpeed : DRIBBLE_SPEED;
     this.shootPower = character ? character.modifiers.shootPower : SHOOT_POWER;
@@ -2156,6 +2171,10 @@ function initPlayers2v2() {
   // Red team: 2 AI opponents
   players.push(new Player(WIDTH - 120, HEIGHT / 2 - 80, 'red', opponent1Character, false));
   players.push(new Player(WIDTH - 120, HEIGHT / 2 + 80, 'red', opponent2Character, false));
+}
+function initPlayersTraining() {
+  players = [];
+  players.push(new Player(WIDTH / 2, HEIGHT / 2, 'blue', playerCharacter, true));
 }
 initPlayers();
 const bluePlayer = () => players.find(p => p.team === 'blue' && p.isHuman) || players.find(p => p.team === 'blue');
@@ -2293,11 +2312,53 @@ function returnToMenu() {
   document.getElementById('gameCanvas').style.display = 'none';
   document.getElementById('ui').style.display = 'none';
   document.getElementById('controls').style.display = 'none';
+  document.getElementById('leaveBtn').style.display = 'none';
   document.body.style.cursor = 'default';
   gameState = 'menu';
   gameOver = false;
   scores = { blue: 0, red: 0 };
   showMainMenu();
+}
+
+function leaveGame() {
+  if (gameState !== 'playing') return;
+  returnToMenu();
+}
+
+function checkForfeit() {
+  if (gameState !== 'playing' || gameOver) return;
+  for (const team of ['blue', 'red']) {
+    const teamPlayers = players.filter(p => p.team === team);
+    if (teamPlayers.length === 0) continue;
+    const hadHumans = teamPlayers.some(p => p.wasHuman);
+    const hasActiveHumans = teamPlayers.some(p => p.isHuman);
+    if (hadHumans && !hasActiveHumans) {
+      const blueWins = team === 'red';
+      endGame('Forfeit — ' + (team === 'blue' ? 'Blue' : 'Red') + ' team abandoned the match', blueWins);
+      return;
+    }
+  }
+}
+
+function startTrainingMode(charKey, rarity) {
+  currentGameMode = 'training';
+  playerCharacter = createCharacterWithRarity(charKey, rarity);
+  aiCharacter = null;
+  teammateCharacter = null;
+  opponent1Character = null;
+  opponent2Character = null;
+
+  hideAllScreens();
+  document.getElementById('ui').style.display = 'none';
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('gameCanvas').style.display = 'block';
+  document.getElementById('leaveBtn').style.display = 'block';
+  gameState = 'playing';
+  document.body.style.cursor = 'crosshair';
+  gameOver = false;
+  scores = { blue: 0, red: 0 };
+  ball.reset(false);
+  initPlayersTraining();
 }
 
 // ─── Input Handling ──────────────────────────────────────────
@@ -2317,7 +2378,7 @@ window.addEventListener('mousemove', e => {
   mouse.x = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
   mouse.y = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
 });
-window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key === 'Escape' && gameState === 'playing') leaveGame(); });
 window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
 // ─── Game Loop ─────────────────────────────────────────────
@@ -2334,8 +2395,21 @@ function gameLoop() {
       const maxSpd = hp.hasBall ? hp.dribbleSpeed : hp.maxSpeed;
       const spd = Math.hypot(hp.vx, hp.vy);
       if (spd > maxSpd) { hp.vx = (hp.vx / spd) * maxSpd; hp.vy = (hp.vy / spd) * maxSpd; }
+      // Track input for idle detection
+      if (ax !== 0 || ay !== 0) {
+        hp.lastInputTime = Date.now();
+        if (!hp.isHuman && hp.wasHuman) hp.isHuman = true;
+      }
+    }
+    // Check idle status for all human players
+    const now = Date.now();
+    for (const p of players) {
+      if (p.isHuman && p.wasHuman && now - p.lastInputTime > IDLE_TIMEOUT) {
+        p.isHuman = false;
+      }
     }
     players.forEach(p => p.update()); ball.update(); Particle.updateAll(); resolveCollisions();
+    checkForfeit();
   }
   ctx.clearRect(0, 0, WIDTH, HEIGHT); drawField(); players.sort((a, b) => a.y - b.y); players.forEach(p => p.draw()); ball.draw(); Particle.drawAll(); drawShootIndicator();
   requestAnimationFrame(gameLoop);
