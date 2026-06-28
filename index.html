@@ -2072,12 +2072,19 @@ class Player {
       else if (ball.carrier === this) this.hasBall = true; else this.hasBall = false;
     }
     if (this.team === 'red' && !gameOver) this.aiBehavior();
+    if (this.team === 'blue' && !this.isHuman && !gameOver) this.aiBehavior();
   }
   kick(vx, vy) { if (!this.hasBall) return; const mag = Math.hypot(vx, vy); if (mag === 0) return; ball.release(); this.hasBall = false; ball.x = this.x + (vx / mag) * (this.radius + ball.radius + 6); ball.y = this.y + (vy / mag) * (this.radius + ball.radius + 6); ball.vx = (vx / mag) * this.shootPower; ball.vy = (vy / mag) * this.shootPower; this.loseControl = 8; new Particle(ball.x, ball.y, '#fff', 5); new Particle(ball.x, ball.y, this.character ? this.character.color : '#00d4ff', 3); }
   dash(dirX, dirY) { if (this.dashCooldown > 0 || this.stunned > 0 || this.loseControl > 0) return; const mag = Math.hypot(dirX, dirY); if (mag === 0) return; this.dashCooldown = this.dashCooldownMax; this.dashTimer = DASH_DURATION; this.vx = (dirX / mag) * DASH_FORCE; this.vy = (dirY / mag) * DASH_FORCE; new Particle(this.x, this.y, this.character ? this.character.color : '#ff1744', 8); }
   dribble() { if (this.dribbleCooldown > 0 || this.stunned > 0) return; this.dribbleTimer = this.dribbleDurationMax; this.dribbleCooldown = this.dribbleCooldownMax; }
   aiBehavior() {
-    const opp = players.find(p => p.team === 'blue'); if (!opp) return;
+    const opponents = players.filter(p => p.team !== this.team);
+    const nearestOpp = opponents.reduce((closest, p) => {
+      const d = dist(this.x, this.y, p.x, p.y);
+      return (!closest || d < dist(this.x, this.y, closest.x, closest.y)) ? p : closest;
+    }, null);
+    if (!nearestOpp) return;
+    const opp = nearestOpp;
     const diff = DIFFICULTY[selectedDifficulty];
     const behavior = this.character ? (this.character.behavior || 'allrounder') : 'allrounder';
     let aiAccel = diff.aiAccel, aiDribbleDist = diff.aiDribbleDist, aiDribbleMiss = diff.aiDribbleMiss;
@@ -2089,27 +2096,28 @@ class Player {
     else if (behavior === 'forward') { aiAccel *= 1.2; aiShootPower *= 1.2; shootThreshold = 280; aiDribbleDist *= 0.6; aiDribbleMiss *= 1.8; aiTackleRange *= 0.8; aiSideStep *= 0.7; }
     const oppDist = dist(this.x, this.y, opp.x, opp.y); const oppClosing = oppDist < this.aiLastOppDist; this.aiLastOppDist = oppDist;
     if (this.hasBall) {
-      const targetX = 80, targetY = HEIGHT / 2 + Math.sin(Date.now() * 0.002) * 30;
+      const targetX = this.team === 'red' ? 80 : WIDTH - 80, targetY = HEIGHT / 2 + Math.sin(Date.now() * 0.002) * 30;
       const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy);
       if (d > 5) { this.vx += (dx / d) * aiAccel; this.vy += (dy / d) * aiAccel; }
       if (oppDist < aiDribbleDist && opp.isDashing && oppClosing && this.dribbleCooldown <= 0) { if (this.aiReactDelay === 0 && !this.aiDribbleWanted) { this.aiReactDelay = diff.aiReactMin + Math.floor(Math.random() * (diff.aiReactMax - diff.aiReactMin)); this.aiDribbleWanted = true; } }
       if (this.aiDribbleWanted && this.aiReactDelay <= 0) { this.aiDribbleWanted = false; if (Math.random() > aiDribbleMiss && oppDist < aiDribbleDist + 40) this.dribble(); }
       if (!opp.isDashing || oppDist > aiDribbleDist + 50) this.aiDribbleWanted = false;
-      if (this.x < shootThreshold) {
+      const shootX = this.team === 'red' ? 0 : WIDTH;
+      if ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold)) {
         const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread;
-        const sx = 0 - this.x, sy = goalY - this.y, angle = Math.atan2(sy, sx), power = aiShootPower + Math.random() * 3, mag2 = Math.hypot(sx, sy);
+        const sx = shootX - this.x, sy = goalY - this.y, angle = Math.atan2(sy, sx), power = aiShootPower + Math.random() * 3, mag2 = Math.hypot(sx, sy);
         ball.release(); this.hasBall = false; ball.x = this.x + (sx / mag2) * (this.radius + ball.radius + 6); ball.y = this.y + (sy / mag2) * (this.radius + ball.radius + 6); ball.vx = Math.cos(angle) * power; ball.vy = Math.sin(angle) * power; this.loseControl = 8; return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
     } else {
       let targetX, targetY;
-      if (ball.carrier === opp) { targetX = opp.x + opp.vx * diff.aiPredict; targetY = opp.y + opp.vy * diff.aiPredict; const contactDist = this.radius + opp.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
+      if (ball.carrier && ball.carrier.team !== this.team) { targetX = ball.carrier.x + ball.carrier.vx * diff.aiPredict; targetY = ball.carrier.y + ball.carrier.vy * diff.aiPredict; const contactDist = this.radius + ball.carrier.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
         if (inTackleRange) { if (this.aiTackleWindup === 0) this.aiTackleTarget = aiTackleWindupMin + Math.floor(Math.random() * (aiTackleWindupMax - aiTackleWindupMin)); this.aiTackleWindup++; } else { this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
-        if (this.aiTackleWindup >= this.aiTackleTarget && this.aiTackleTarget > 0) { if (this.dashCooldown <= 0 && this.loseControl <= 0 && !this.isDashing) this.dash(opp.x - this.x, opp.y - this.y); this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
+        if (this.aiTackleWindup >= this.aiTackleTarget && this.aiTackleTarget > 0) { if (this.dashCooldown <= 0 && this.loseControl <= 0 && !this.isDashing) this.dash(ball.carrier.x - this.x, ball.carrier.y - this.y); this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
         if (Math.random() < aiOvershootChance && this.aiOvershoot === 0) this.aiOvershoot = 20 + Math.floor(Math.random() * 20);
       } else { targetX = ball.x + ball.vx * 2; targetY = ball.y + ball.vy * 2; this.aiTackleWindup = 0; }
       if (this.aiOvershoot > 0) { targetX += (opp.x - this.x) * 0.8; targetY += (opp.y - this.y) * 0.8; }
-      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = ball.carrier === opp ? aiChaseSpd : 0.32; this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
+      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) ? aiChaseSpd : 0.32; this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
     }
     const maxSpd = this.hasBall ? this.dribbleSpeed : this.maxSpeed; const spd = Math.hypot(this.vx, this.vy);
     if (spd > maxSpd && !this.isDashing) { this.vx = (this.vx / spd) * maxSpd; this.vy = (this.vy / spd) * maxSpd; }
@@ -2148,22 +2156,29 @@ function initPlayers2v2() {
   players.push(new Player(WIDTH - 120, HEIGHT / 2 + 80, 'red', opponent2Character, false));
 }
 initPlayers();
-const bluePlayer = () => players.find(p => p.team === 'blue');
-const redPlayer = () => players.find(p => p.team === 'red');
+const bluePlayer = () => players.find(p => p.team === 'blue' && p.isHuman) || players.find(p => p.team === 'blue');
+const redPlayer = () => players.find(p => p.team === 'red' && p.isHuman) || players.find(p => p.team === 'red');
+const humanPlayer = () => players.find(p => p.isHuman);
 
 function resolveCollisions() {
-  const p1 = players[0], p2 = players[1]; const d = dist(p1.x, p1.y, p2.x, p2.y); const minDist = p1.radius + p2.radius;
-  if (d >= minDist || d === 0) return;
-  const checkDash = (dasher, target) => {
-    if (!dasher.isDashing) return;
-    if (target.isDribbling) { dasher.loseControl = LOSE_CONTROL_FRAMES; dasher.dashTimer = 0; dasher.vx *= 0.15; dasher.vy *= 0.15; new Particle(dasher.x, dasher.y, '#00d4ff', 6); }
-    else if (target.hasBall) { ball.release(); target.hasBall = false; target.stunned = 25; ball.x = target.x; ball.y = target.y; ball.vx = 0; ball.vy = 0; dasher.dashTimer = 0; new Particle(target.x, target.y, '#ff1744', 8); new Particle(dasher.x, dasher.y, dasher.character ? dasher.character.color : '#4488ff', 5); }
-  };
-  checkDash(p1, p2); checkDash(p2, p1);
-  if (p1.isDashing || p2.isDashing) return;
-  const overlap = minDist - d; const nx = (p2.x - p1.x) / d; const ny = (p2.y - p1.y) / d;
-  p1.x -= nx * overlap * 0.5; p1.y -= ny * overlap * 0.5; p2.x += nx * overlap * 0.5; p2.y += ny * overlap * 0.5;
-  const t1vx = p1.vx * 0.4, t1vy = p1.vy * 0.4; p1.vx = p2.vx * 0.4; p1.vy = p2.vy * 0.4; p2.vx = t1vx; p2.vy = t1vy;
+  // Resolve collisions between all pairs of players
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i + 1; j < players.length; j++) {
+      const p1 = players[i], p2 = players[j];
+      const d = dist(p1.x, p1.y, p2.x, p2.y); const minDist = p1.radius + p2.radius;
+      if (d >= minDist || d === 0) continue;
+      const checkDash = (dasher, target) => {
+        if (!dasher.isDashing) return;
+        if (target.isDribbling) { dasher.loseControl = LOSE_CONTROL_FRAMES; dasher.dashTimer = 0; dasher.vx *= 0.15; dasher.vy *= 0.15; new Particle(dasher.x, dasher.y, '#00d4ff', 6); }
+        else if (target.hasBall) { ball.release(); target.hasBall = false; target.stunned = 25; ball.x = target.x; ball.y = target.y; ball.vx = 0; ball.vy = 0; dasher.dashTimer = 0; new Particle(target.x, target.y, '#ff1744', 8); new Particle(dasher.x, dasher.y, dasher.character ? dasher.character.color : '#4488ff', 5); }
+      };
+      checkDash(p1, p2); checkDash(p2, p1);
+      if (p1.isDashing || p2.isDashing) continue;
+      const overlap = minDist - d; const nx = (p2.x - p1.x) / d; const ny = (p2.y - p1.y) / d;
+      p1.x -= nx * overlap * 0.5; p1.y -= ny * overlap * 0.5; p2.x += nx * overlap * 0.5; p2.y += ny * overlap * 0.5;
+      const t1vx = p1.vx * 0.4, t1vy = p1.vy * 0.4; p1.vx = p2.vx * 0.4; p1.vy = p2.vy * 0.4; p2.vx = t1vx; p2.vy = t1vy;
+    }
+  }
 }
 
 // ─── Drawing Functions ───────────────────────────────────────
@@ -2278,9 +2293,9 @@ window.addEventListener('mousedown', e => {
   const rect = canvas.getBoundingClientRect();
   const mx = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
   const my = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
-  const bp = bluePlayer(); if (!bp) return;
-  if (e.button === 0) { if (bp.hasBall) { const dx = mx - bp.x, dy = my - bp.y; bp.kick(dx, dy); } }
-  else if (e.button === 2) { if (bp.hasBall) bp.dribble(); else { const dx = mx - bp.x, dy = my - bp.y; bp.dash(dx, dy); } }
+  const hp = humanPlayer(); if (!hp) return;
+  if (e.button === 0) { if (hp.hasBall) { const dx = mx - hp.x, dy = my - hp.y; hp.kick(dx, dy); } }
+  else if (e.button === 2) { if (hp.hasBall) hp.dribble(); else { const dx = mx - hp.x, dy = my - hp.y; hp.dash(dx, dy); } }
 });
 window.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
@@ -2293,17 +2308,17 @@ window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 // ─── Game Loop ─────────────────────────────────────────────
 function gameLoop() {
   if (gameState === 'playing' && !gameOver) {
-    const bp = bluePlayer();
-    if (bp && !bp.isDashing && bp.stunned <= 0 && bp.loseControl <= 0) {
+    const hp = humanPlayer();
+    if (hp && !hp.isDashing && hp.stunned <= 0 && hp.loseControl <= 0) {
       let ax = 0, ay = 0;
       if (keys['w'] || keys['arrowup']) ay -= PLAYER_ACCEL;
       if (keys['s'] || keys['arrowdown']) ay += PLAYER_ACCEL;
       if (keys['a'] || keys['arrowleft']) ax -= PLAYER_ACCEL;
       if (keys['d'] || keys['arrowright']) ax += PLAYER_ACCEL;
-      bp.vx += ax; bp.vy += ay;
-      const maxSpd = bp.hasBall ? bp.dribbleSpeed : bp.maxSpeed;
-      const spd = Math.hypot(bp.vx, bp.vy);
-      if (spd > maxSpd) { bp.vx = (bp.vx / spd) * maxSpd; bp.vy = (bp.vy / spd) * maxSpd; }
+      hp.vx += ax; hp.vy += ay;
+      const maxSpd = hp.hasBall ? hp.dribbleSpeed : hp.maxSpeed;
+      const spd = Math.hypot(hp.vx, hp.vy);
+      if (spd > maxSpd) { hp.vx = (hp.vx / spd) * maxSpd; hp.vy = (hp.vy / spd) * maxSpd; }
     }
     players.forEach(p => p.update()); ball.update(); Particle.updateAll(); resolveCollisions();
   }
