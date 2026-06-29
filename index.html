@@ -1384,9 +1384,9 @@ function showMainMenu() {
   const name = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Striker';
   document.getElementById('welcomeMsg').textContent = 'Welcome, ' + name;
   if (playerData.stats) {
-    document.getElementById('menuWins').textContent = playerData.stats.wins || 0;
+    document.getElementById('menuWins').textContent = formatNumber(playerData.stats.wins || 0);
     const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
-    document.getElementById('menuRolls').textContent = totalRolls;
+    document.getElementById('menuRolls').textContent = formatNumber(totalRolls);
   }
   checkPendingReload();
 }
@@ -1686,8 +1686,12 @@ function getRankTier(rankPoints) {
 
 function updateYenDisplay() {
   if (playerData.stats) {
-    document.getElementById('menuYen').textContent = (playerData.stats.yen || 0);
+    document.getElementById('menuYen').textContent = formatNumber(playerData.stats.yen || 0);
   }
+}
+
+function formatNumber(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // Update showMainMenu to include yen
@@ -1697,10 +1701,10 @@ function showMainMenu() {
   const name = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Striker';
   document.getElementById('welcomeMsg').textContent = 'Welcome, ' + name;
   if (playerData.stats) {
-    document.getElementById('menuWins').textContent = playerData.stats.wins || 0;
+    document.getElementById('menuWins').textContent = formatNumber(playerData.stats.wins || 0);
     const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
-    document.getElementById('menuRolls').textContent = totalRolls;
-    document.getElementById('menuYen').textContent = (playerData.stats.yen || 0);
+    document.getElementById('menuRolls').textContent = formatNumber(totalRolls);
+    document.getElementById('menuYen').textContent = formatNumber(playerData.stats.yen || 0);
   }
   loadParty();
   checkPendingReload();
