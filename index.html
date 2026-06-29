@@ -131,10 +131,25 @@ canvas {
 #mainMenu {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #050510 100%);
   overflow: hidden;
 }
-#mainMenu .menu-bg-effects { display: none; }
-#mainMenu .menu-bg-grid { display: none; }
+#mainMenu .menu-bg-effects {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+  animation: menuBgPulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+#mainMenu .menu-bg-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
 #mainMenu .bl-logo-wrap {
   position: relative;
   width: 120px; height: 140px;
@@ -927,6 +942,8 @@ Sign in with Google
 
 <!-- Main Menu -->
 <div id="mainMenu" class="screen-overlay hidden">
+<div class="menu-bg-effects"></div>
+<div class="menu-bg-grid"></div>
 <div class="bl-logo-wrap">
   <img src="assets/bluelock_logo.png" alt="Blue Lock">
 </div>
