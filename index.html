@@ -376,17 +376,20 @@ canvas {
 .nel-section { display: flex; flex-direction: column; gap: 10px; }
 .nel-section-title { font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 3px; color: #00d4ff; margin-bottom: 4px; }
 .nel-cards { display: flex; gap: 12px; flex-wrap: wrap; }
-.nel-card { flex: 1; min-width: 280px; height: 160px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.1); background: rgba(10,10,30,0.8); cursor: pointer; transition: all 0.3s ease; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.nel-card { flex: 1; min-width: 280px; height: 160px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s ease; overflow: hidden; position: relative; display: flex; flex-direction: column; background-size: cover; background-position: center; }
 .nel-card:hover { transform: translateY(-5px) scale(1.02); border-color: #00d4ff; box-shadow: 0 15px 40px rgba(0,100,255,0.2); }
 .nel-card:active { transform: translateY(-2px) scale(0.98); }
 .nel-card.full-width { flex: 0 0 100%; min-width: 100%; }
-.nel-card .nel-card-img { width: 100%; height: 80px; background: rgba(0,0,0,0.3); position: relative; overflow: hidden; }
-.nel-card .nel-card-img::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, transparent 50%, rgba(10,10,30,0.9) 100%); }
-.nel-card .nel-card-content { padding: 12px 16px; flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; }
-.nel-card .nel-card-name { font-size: 20px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px; color: white; }
-.nel-card .nel-card-desc { font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'Roboto Condensed', sans-serif; margin-top: 2px; }
-.nel-card .nel-card-badge { position: absolute; top: 12px; right: 16px; font-size: 24px; }
+.nel-card .nel-card-img { width: 100%; height: 80px; position: relative; overflow: hidden; background: transparent; }
+.nel-card .nel-card-content { padding: 12px 16px; flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; background: linear-gradient(0deg, rgba(5,5,16,0.95) 0%, rgba(5,5,16,0.7) 50%, rgba(5,5,16,0.2) 100%); }
+.nel-card .nel-card-name { font-size: 20px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+.nel-card .nel-card-desc { font-size: 12px; color: rgba(255,255,255,0.7); font-family: 'Roboto Condensed', sans-serif; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+.nel-card .nel-card-badge { position: absolute; top: 8px; right: 12px; font-size: 24px; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
 .nel-card .nel-card-badge.ranked { animation: badgePulse 2s ease-in-out infinite; }
+/* Card backgrounds */
+.nel-card[data-bg="1"] { background-image: url('assets/card_bg1.jpg'); }
+.nel-card[data-bg="2"] { background-image: url('assets/card_bg2.jpg'); }
+.nel-card[data-bg="3"] { background-image: url('assets/card_bg3.jpg'); }
 @keyframes badgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
 /* Character Collection */
@@ -842,7 +845,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">RANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" onclick="selectPlayMode('ranked_1v1')">
+      <div class="nel-card" data-bg="1" onclick="selectPlayMode('ranked_1v1')">
         <div class="nel-card-img" id="nelRanked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 RANKED</div>
@@ -850,7 +853,7 @@ Sign in with Google
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
-      <div class="nel-card" onclick="selectPlayMode('ranked_2v2')">
+      <div class="nel-card" data-bg="2" onclick="selectPlayMode('ranked_2v2')">
         <div class="nel-card-img" id="nelRanked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 RANKED</div>
@@ -863,7 +866,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">UNRANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" onclick="selectPlayMode('unranked_1v1')">
+      <div class="nel-card" data-bg="3" onclick="selectPlayMode('unranked_1v1')">
         <div class="nel-card-img" id="nelUnranked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 UNRANKED</div>
@@ -871,7 +874,7 @@ Sign in with Google
           <div class="nel-card-badge">🎮</div>
         </div>
       </div>
-      <div class="nel-card" onclick="selectPlayMode('unranked_2v2')">
+      <div class="nel-card" data-bg="1" onclick="selectPlayMode('unranked_2v2')">
         <div class="nel-card-img" id="nelUnranked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 UNRANKED</div>
@@ -884,7 +887,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">VS COMPUTER</div>
     <div class="nel-cards">
-      <div class="nel-card" onclick="selectPlayMode('vs_comp_1v1')">
+      <div class="nel-card" data-bg="2" onclick="selectPlayMode('vs_comp_1v1')">
         <div class="nel-card-img" id="nelVsComp1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 VS COMPUTER</div>
@@ -892,7 +895,7 @@ Sign in with Google
           <div class="nel-card-badge">🤖</div>
         </div>
       </div>
-      <div class="nel-card" onclick="selectPlayMode('vs_comp_2v2')">
+      <div class="nel-card" data-bg="3" onclick="selectPlayMode('vs_comp_2v2')">
         <div class="nel-card-img" id="nelVsComp2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 VS COMPUTER</div>
@@ -905,7 +908,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">TRAINING</div>
     <div class="nel-cards">
-      <div class="nel-card full-width" onclick="selectPlayMode('training')">
+      <div class="nel-card full-width" data-bg="1" onclick="selectPlayMode('training')">
         <div class="nel-card-img" id="nelTrainingImg"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">SOLO TRAINING</div>
@@ -1451,36 +1454,6 @@ function goToFriends() { showFriendsScreen(); }
 function showNelPlayMenu() {
   hideAllScreens(); gameState = 'nelPlay';
   document.getElementById('nelPlayMenu').classList.remove('hidden');
-  // Set character images on Neo cards
-  const char = playerData.characters[0];
-  if (char) {
-    const charData = CHARACTERS[char.character_key];
-    if (charData) {
-      const imgUrl = IMAGE_DATA[charData.imgKey];
-      // Set images on cards
-      document.getElementById('nelRanked1v1Img').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelRanked1v1Img').style.backgroundSize = 'cover';
-      document.getElementById('nelRanked1v1Img').style.backgroundPosition = 'top center';
-      document.getElementById('nelRanked2v2Img').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelRanked2v2Img').style.backgroundSize = 'cover';
-      document.getElementById('nelRanked2v2Img').style.backgroundPosition = 'top center';
-      document.getElementById('nelUnranked1v1Img').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelUnranked1v1Img').style.backgroundSize = 'cover';
-      document.getElementById('nelUnranked1v1Img').style.backgroundPosition = 'top center';
-      document.getElementById('nelUnranked2v2Img').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelUnranked2v2Img').style.backgroundSize = 'cover';
-      document.getElementById('nelUnranked2v2Img').style.backgroundPosition = 'top center';
-      document.getElementById('nelVsComp1v1Img').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelVsComp1v1Img').style.backgroundSize = 'cover';
-      document.getElementById('nelVsComp1v1Img').style.backgroundPosition = 'top center';
-      document.getElementById('nelVsComp2v2Img').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelVsComp2v2Img').style.backgroundSize = 'cover';
-      document.getElementById('nelVsComp2v2Img').style.backgroundPosition = 'top center';
-      document.getElementById('nelTrainingImg').style.backgroundImage = 'url(' + imgUrl + ')';
-      document.getElementById('nelTrainingImg').style.backgroundSize = 'cover';
-      document.getElementById('nelTrainingImg').style.backgroundPosition = 'top center';
-    }
-  }
   checkPendingReload();
 }
 
