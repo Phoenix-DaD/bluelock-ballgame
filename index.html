@@ -99,6 +99,172 @@ canvas {
 .menu-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 .back-btn { background: linear-gradient(135deg, #2c3e50, #1a252f); margin-top: 20px; width: 200px; }
 
+/* ===== BLUE LOCK MAIN MENU REDESIGN ===== */
+#mainMenu {
+  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #000000 100%);
+  position: relative;
+  overflow: hidden;
+}
+#mainMenu::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+  animation: menuBgPulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes menuBgPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+/* Subtle cyan grid */
+#mainMenu::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+/* Logo */
+#mainMenu .bl-logo-wrap {
+  position: relative;
+  width: 100px; height: 100px;
+  margin-bottom: 8px;
+  animation: logoFloat 3s ease-in-out infinite;
+}
+#mainMenu .bl-logo-wrap img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(0, 150, 255, 0.5));
+  animation: logoGlow 2.5s ease-in-out infinite;
+}
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes logoGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 150, 255, 0.4)) drop-shadow(0 0 20px rgba(0, 100, 255, 0.2)); }
+  50% { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 100, 255, 0.4)); }
+}
+/* Title */
+#mainMenu h1 {
+  font-size: 48px;
+  letter-spacing: 10px;
+  margin-bottom: 2px;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(0,150,255,0.6), 0 0 40px rgba(0,100,255,0.3), 0 2px 4px rgba(0,0,0,0.5);
+  animation: titleEntry 0.7s ease-out forwards;
+}
+@keyframes titleEntry {
+  from { opacity: 0; transform: scale(0.8); letter-spacing: 20px; }
+  to { opacity: 1; transform: scale(1); letter-spacing: 10px; }
+}
+/* Welcome & Stats */
+#mainMenu .welcome-msg {
+  color: rgba(0, 212, 255, 0.8);
+  font-size: 13px;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  animation: fadeUp 0.5s ease-out 0.3s forwards;
+  opacity: 0;
+}
+#mainMenu .stats-bar {
+  gap: 16px;
+  margin-bottom: 30px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.35);
+  animation: fadeUp 0.5s ease-out 0.4s forwards;
+  opacity: 0;
+}
+#mainMenu .stats-bar span {
+  padding: 5px 14px;
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+#mainMenu .stats-bar span::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+  opacity: 0.5;
+}
+#mainMenu .stats-bar .yen {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.2);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Buttons */
+#mainMenu .menu-btn {
+  width: 320px;
+  height: 54px;
+  padding: 0;
+  margin: 5px 0;
+  font-size: 17px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-family: 'Oswald', sans-serif;
+  background: linear-gradient(135deg, #0f1c2e 0%, #1a2639 100%);
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+#mainMenu .menu-btn.play { animation-delay: 0.5s; }
+#mainMenu .menu-btn.customize { animation-delay: 0.6s; }
+#mainMenu .menu-btn.friends { animation-delay: 0.7s; }
+#mainMenu .menu-btn.settings { animation-delay: 0.8s; }
+#mainMenu .menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 3px; height: 100%;
+  background: #00d4ff;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+}
+#mainMenu .menu-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.15), transparent);
+  transition: left 0.6s ease;
+}
+#mainMenu .menu-btn:hover {
+  transform: translateX(6px) scale(1.03);
+  color: #fff;
+  background: linear-gradient(135deg, #162a42 0%, #1f3a5c 100%);
+  box-shadow: 0 0 30px rgba(0, 100, 255, 0.25);
+}
+#mainMenu .menu-btn:hover::before {
+  width: 100%;
+  opacity: 0.08;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.4), transparent 60%);
+}
+#mainMenu .menu-btn:hover::after {
+  left: 100%;
+}
+#mainMenu .menu-btn:active {
+  transform: translateX(3px) scale(0.98);
+}
+#mainMenu .menu-btn.customize::before { background: #a855f7; box-shadow: 0 0 12px rgba(168, 85, 247, 0.6); }
+#mainMenu .menu-btn.friends::before { background: #22d3ee; box-shadow: 0 0 12px rgba(34, 211, 238, 0.6); }
+#mainMenu .menu-btn.settings::before { background: #94a3b8; box-shadow: 0 0 12px rgba(148, 163, 184, 0.6); }
+
 /* Party Widget */
 .party-widget {
   position: fixed; bottom: 20px; left: 20px;
@@ -733,6 +899,9 @@ Sign in with Google
 
 <!-- Main Menu -->
 <div id="mainMenu" class="screen-overlay hidden">
+<div class="bl-logo-wrap">
+  <img src="assets/bluelock_logo.png" alt="Blue Lock">
+</div>
 <h1>BLUE LOCK</h1>
 <div class="welcome-msg" id="welcomeMsg">Welcome, Striker</div>
 <div class="stats-bar" id="menuStats">
