@@ -386,10 +386,14 @@ canvas {
 .nel-card .nel-card-desc { font-size: 12px; color: rgba(255,255,255,0.7); font-family: 'Roboto Condensed', sans-serif; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
 .nel-card .nel-card-badge { position: absolute; top: 8px; right: 12px; font-size: 24px; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
 .nel-card .nel-card-badge.ranked { animation: badgePulse 2s ease-in-out infinite; }
-/* Card backgrounds */
-.nel-card[data-bg="1"] { background-image: url('assets/card_bg1.jpg'); }
-.nel-card[data-bg="2"] { background-image: url('assets/card_bg2.jpg'); }
-.nel-card[data-bg="3"] { background-image: url('assets/card_bg3.jpg'); }
+/* Card backgrounds - each card gets a unique image matching its title */
+.nel-card[data-bg="ranked1v1"] { background-image: url('assets/card_bg2.jpg'); }
+.nel-card[data-bg="ranked2v2"] { background-image: url('assets/ws_team1.jpg'); }
+.nel-card[data-bg="unranked1v1"] { background-image: url('assets/ws_bluelock.png'); }
+.nel-card[data-bg="unranked2v2"] { background-image: url('assets/card_bg3.jpg'); }
+.nel-card[data-bg="vscomp1v1"] { background-image: url('assets/ws_bluelock4k.png'); }
+.nel-card[data-bg="vscomp2v2"] { background-image: url('assets/card_bg1.jpg'); }
+.nel-card[data-bg="training"] { background-image: url('assets/ws_bachira.jpg'); }
 @keyframes badgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
 /* Character Collection */
@@ -845,7 +849,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">RANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" data-bg="1" onclick="selectPlayMode('ranked_1v1')">
+      <div class="nel-card" data-bg="ranked1v1" onclick="selectPlayMode('ranked_1v1')">
         <div class="nel-card-img" id="nelRanked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 RANKED</div>
@@ -853,7 +857,7 @@ Sign in with Google
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
-      <div class="nel-card" data-bg="2" onclick="selectPlayMode('ranked_2v2')">
+      <div class="nel-card" data-bg="ranked2v2" onclick="selectPlayMode('ranked_2v2')">
         <div class="nel-card-img" id="nelRanked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 RANKED</div>
@@ -866,7 +870,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">UNRANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" data-bg="3" onclick="selectPlayMode('unranked_1v1')">
+      <div class="nel-card" data-bg="unranked1v1" onclick="selectPlayMode('unranked_1v1')">
         <div class="nel-card-img" id="nelUnranked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 UNRANKED</div>
@@ -874,7 +878,7 @@ Sign in with Google
           <div class="nel-card-badge">🎮</div>
         </div>
       </div>
-      <div class="nel-card" data-bg="1" onclick="selectPlayMode('unranked_2v2')">
+      <div class="nel-card" data-bg="unranked2v2" onclick="selectPlayMode('unranked_2v2')">
         <div class="nel-card-img" id="nelUnranked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 UNRANKED</div>
@@ -887,7 +891,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">VS COMPUTER</div>
     <div class="nel-cards">
-      <div class="nel-card" data-bg="2" onclick="selectPlayMode('vs_comp_1v1')">
+      <div class="nel-card" data-bg="vscomp1v1" onclick="selectPlayMode('vs_comp_1v1')">
         <div class="nel-card-img" id="nelVsComp1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 VS COMPUTER</div>
@@ -895,7 +899,7 @@ Sign in with Google
           <div class="nel-card-badge">🤖</div>
         </div>
       </div>
-      <div class="nel-card" data-bg="3" onclick="selectPlayMode('vs_comp_2v2')">
+      <div class="nel-card" data-bg="vscomp2v2" onclick="selectPlayMode('vs_comp_2v2')">
         <div class="nel-card-img" id="nelVsComp2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 VS COMPUTER</div>
@@ -908,7 +912,7 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">TRAINING</div>
     <div class="nel-cards">
-      <div class="nel-card full-width" data-bg="1" onclick="selectPlayMode('training')">
+      <div class="nel-card full-width" data-bg="training" onclick="selectPlayMode('training')">
         <div class="nel-card-img" id="nelTrainingImg"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">SOLO TRAINING</div>
