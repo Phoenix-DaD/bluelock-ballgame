@@ -101,31 +101,30 @@ canvas {
 
 /* ===== BLUE LOCK MAIN MENU REDESIGN ===== */
 #mainMenu {
-  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #000000 100%);
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #050510 100%);
   overflow: hidden;
 }
-#mainMenu::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+#mainMenu .menu-bg-effects {
+  position: absolute; inset: 0;
   background:
     radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
   animation: menuBgPulse 8s ease-in-out infinite;
   pointer-events: none;
 }
-@keyframes menuBgPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-/* Subtle cyan grid */
-#mainMenu::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+#mainMenu .menu-bg-grid {
+  position: absolute; inset: 0;
   background-image:
     linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
+}
+@keyframes menuBgPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 /* Logo */
 #mainMenu .bl-logo-wrap {
@@ -140,7 +139,7 @@ canvas {
 #mainMenu .bl-logo-wrap img {
   max-width: 100%; max-height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(0, 150, 255, 0.5));
+  filter: drop-shadow(0 0 12px rgba(0, 150, 255, 0.5)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
   animation: logoGlow 2.5s ease-in-out infinite;
   display: block;
 }
@@ -902,6 +901,8 @@ Sign in with Google
 
 <!-- Main Menu -->
 <div id="mainMenu" class="screen-overlay hidden">
+<div class="menu-bg-effects"></div>
+<div class="menu-bg-grid"></div>
 <div class="bl-logo-wrap">
   <img src="assets/bluelock_logo.png" alt="Blue Lock">
 </div>
