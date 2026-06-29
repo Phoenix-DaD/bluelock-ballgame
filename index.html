@@ -723,7 +723,7 @@ canvas {
 #goalText { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ffd700; text-shadow: 0 4px 20px rgba(0,0,0,0.9), 0 0 40px rgba(255,215,0,0.6); pointer-events: none; z-index: 16; display: none; letter-spacing: 8px; animation: goalPulse 0.8s ease-out; }
 @keyframes goalPulse { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 40% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 #winner {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; pointer-events: all; z-index: 30; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; pointer-events: all; z-index: 30; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 20px; overflow-y: auto;
 }
 #winner .win-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; transition: opacity 0.5s ease; }
 #winner.victory .win-bg { background: radial-gradient(ellipse at center, rgba(0,212,255,0.15) 0%, rgba(0,50,100,0.3) 50%, rgba(5,5,20,0.95) 100%); opacity: 1; }
@@ -731,21 +731,21 @@ canvas {
 #winner .win-particles { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
 #winner .win-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; opacity: 0; animation: particleRise 2s ease-out infinite; }
 @keyframes particleRise { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-200px) scale(0); opacity: 0; } }
-#winner .win-character { position: relative; width: 150px; height: 150px; border-radius: 50%; overflow: hidden; border: 3px solid; margin-bottom: 20px; opacity: 0; transform: scale(0); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 30px rgba(0,0,0,0.5); background-color: rgba(5,5,16,0.8); background-size: cover; background-position: center 0%; background-repeat: no-repeat; }
+#winner .win-character { position: relative; width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid; margin-bottom: 12px; opacity: 0; transform: scale(0); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 30px rgba(0,0,0,0.5); background-color: rgba(5,5,16,0.8); background-size: cover; background-position: center 0%; background-repeat: no-repeat; }
 #winner.victory .win-character { border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
 #winner.defeat .win-character { border-color: #ff1744; box-shadow: 0 0 30px rgba(255,23,68,0.3); }
 #winner.active .win-character { opacity: 1; transform: scale(1); }
-#winner .win-title { font-size: 64px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 8px; margin-bottom: 8px; opacity: 0; transform: translateY(-30px) scale(0.8); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+#winner .win-title { font-size: 48px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 6px; margin-bottom: 4px; opacity: 0; transform: translateY(-30px) scale(0.8); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
 #winner.victory .win-title { color: #ffd700; text-shadow: 0 0 40px rgba(255,215,0,0.6), 0 4px 12px rgba(0,0,0,0.9); }
 #winner.defeat .win-title { color: #ff1744; text-shadow: 0 0 40px rgba(255,23,68,0.6), 0 4px 12px rgba(0,0,0,0.9); }
 #winner.active .win-title { opacity: 1; transform: translateY(0) scale(1); }
-#winner .win-subtitle { font-size: 18px; font-weight: 400; font-family: 'Roboto Condensed', sans-serif; color: rgba(255,255,255,0.6); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.2s; }
+#winner .win-subtitle { font-size: 16px; font-weight: 400; font-family: 'Roboto Condensed', sans-serif; color: rgba(255,255,255,0.6); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.2s; }
 #winner.active .win-subtitle { opacity: 1; transform: translateY(0); }
-#winner .win-score { font-size: 28px; font-weight: 700; font-family: 'Oswald', sans-serif; color: white; letter-spacing: 3px; margin-bottom: 15px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.35s; }
+#winner .win-score { font-size: 24px; font-weight: 700; font-family: 'Oswald', sans-serif; color: white; letter-spacing: 3px; margin-bottom: 10px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.35s; }
 #winner.active .win-score { opacity: 1; transform: translateY(0); }
-#winner .win-bonus { font-size: 20px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ffd700; letter-spacing: 2px; margin-bottom: 30px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.5s; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
+#winner .win-bonus { font-size: 16px; font-weight: 700; font-family: 'Oswald', sans-serif; color: #ffd700; letter-spacing: 2px; margin-bottom: 20px; opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.5s; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
 #winner.active .win-bonus { opacity: 1; transform: translateY(0); }
-#winner .win-btn { padding: 14px 50px; font-size: 20px; font-weight: 700; border: 2px solid; border-radius: 30px; cursor: pointer; background: transparent; font-family: 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease 0.6s; opacity: 0; transform: translateY(20px); }
+#winner .win-btn { padding: 10px 40px; font-size: 18px; font-weight: 700; border: 2px solid; border-radius: 30px; cursor: pointer; background: transparent; font-family: 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease 0.6s; opacity: 0; transform: translateY(20px); margin-bottom: 20px; }
 #winner.victory .win-btn { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
 #winner.victory .win-btn:hover { background: #ffd700; color: #111; box-shadow: 0 0 30px rgba(255,215,0,0.5); }
 #winner.defeat .win-btn { border-color: #ff1744; color: #ff1744; box-shadow: 0 0 20px rgba(255,23,68,0.2); }
@@ -2135,7 +2135,9 @@ function selectPlayCharacter(charKey, rarity, mode) {
     document.getElementById('ui').style.display = 'block';
     document.getElementById('controls').style.display = 'block';
     document.getElementById('gameCanvas').style.display = 'block';
-    document.getElementById('leaveBtn').style.display = 'block';
+    if (currentGameMode === 'training') {
+      document.getElementById('leaveBtn').style.display = 'block';
+    }
     gameState = 'playing';
     document.body.style.cursor = 'crosshair';
     gameOver = false;
