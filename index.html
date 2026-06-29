@@ -34,9 +34,11 @@ canvas {
 .screen-overlay {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: rgba(5, 5, 20, 0.95); z-index: 20; pointer-events: all;
+  background: rgba(5, 5, 16, 0.85); z-index: 20; pointer-events: all;
+  opacity: 1; transform: scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.screen-overlay.hidden { display: none !important; }
+.screen-overlay.hidden { opacity: 0; transform: scale(0.97); pointer-events: none; z-index: -1; }
 .screen-overlay h1 {
   color: #fff; font-size: 56px; margin-bottom: 8px;
   text-shadow: 0 0 20px rgba(0,150,255,0.6), 0 4px 10px rgba(0,0,0,0.8);
@@ -98,34 +100,41 @@ canvas {
 .menu-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 .back-btn { background: linear-gradient(135deg, #2c3e50, #1a252f); margin-top: 20px; width: 200px; }
 
-/* ===== BLUE LOCK MAIN MENU REDESIGN ===== */
-#mainMenu {
+/* Shared background behind all screens */
+#menuBg {
   position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 10;
+  pointer-events: none;
   background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #050510 100%);
   overflow: hidden;
 }
-#mainMenu .menu-bg-effects {
+#menuBg .menu-bg-effects {
   position: absolute; inset: 0;
   background:
     radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
   animation: menuBgPulse 8s ease-in-out infinite;
-  pointer-events: none;
 }
-#mainMenu .menu-bg-grid {
+#menuBg .menu-bg-grid {
   position: absolute; inset: 0;
   background-image:
     linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
-  pointer-events: none;
 }
 @keyframes menuBgPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
-/* Logo */
+
+/* ===== BLUE LOCK MAIN MENU ===== */
+#mainMenu {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#mainMenu .menu-bg-effects { display: none; }
+#mainMenu .menu-bg-grid { display: none; }
 #mainMenu .bl-logo-wrap {
   position: relative;
   width: 120px; height: 140px;
@@ -801,6 +810,7 @@ canvas {
 </head>
 <body>
 <div id="gameContainer">
+<div id="menuBg"><div class="menu-bg-effects"></div><div class="menu-bg-grid"></div></div>
 <div class="game-area">
 <canvas id="gameCanvas"></canvas>
 <div id="ui"><div id="score">0 - 0</div><div id="info">WASD to move · Left click: Direct Shot · Right click: Steal/Dash</div></div>
@@ -917,8 +927,6 @@ Sign in with Google
 
 <!-- Main Menu -->
 <div id="mainMenu" class="screen-overlay hidden">
-<div class="menu-bg-effects"></div>
-<div class="menu-bg-grid"></div>
 <div class="bl-logo-wrap">
   <img src="assets/bluelock_logo.png" alt="Blue Lock">
 </div>
