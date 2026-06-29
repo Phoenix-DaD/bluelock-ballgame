@@ -34,9 +34,33 @@ canvas {
 .screen-overlay {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: rgba(5, 5, 16, 0.85); z-index: 20; pointer-events: all;
+  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #050510 100%);
+  z-index: 20; pointer-events: all;
   opacity: 1; transform: scale(1);
   transition: opacity 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+}
+.screen-overlay::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+  animation: menuBgPulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+.screen-overlay::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+@keyframes menuBgPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 .screen-overlay.hidden { opacity: 0; transform: scale(0.97); pointer-events: none; z-index: -1; }
 .screen-overlay h1 {
@@ -100,55 +124,11 @@ canvas {
 .menu-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 .back-btn { background: linear-gradient(135deg, #2c3e50, #1a252f); margin-top: 20px; width: 200px; }
 
-/* Shared background behind all screens */
-#menuBg {
-  position: absolute; inset: 0;
-  z-index: 10;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #050510 100%);
-  overflow: hidden;
-}
-#menuBg .menu-bg-effects {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
-  animation: menuBgPulse 8s ease-in-out infinite;
-}
-#menuBg .menu-bg-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-@keyframes menuBgPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
 /* ===== BLUE LOCK MAIN MENU ===== */
 #mainMenu {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 60%, #050510 100%);
   overflow: hidden;
-}
-#mainMenu .menu-bg-effects {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(circle at 30% 50%, rgba(0, 100, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 70% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
-  animation: menuBgPulse 8s ease-in-out infinite;
-  pointer-events: none;
-}
-#mainMenu .menu-bg-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
 }
 #mainMenu .bl-logo-wrap {
   position: relative;
@@ -825,7 +805,6 @@ canvas {
 </head>
 <body>
 <div id="gameContainer">
-<div id="menuBg"><div class="menu-bg-effects"></div><div class="menu-bg-grid"></div></div>
 <div class="game-area">
 <canvas id="gameCanvas"></canvas>
 <div id="ui"><div id="score">0 - 0</div><div id="info">WASD to move · Left click: Direct Shot · Right click: Steal/Dash</div></div>
@@ -942,8 +921,6 @@ Sign in with Google
 
 <!-- Main Menu -->
 <div id="mainMenu" class="screen-overlay hidden">
-<div class="menu-bg-effects"></div>
-<div class="menu-bg-grid"></div>
 <div class="bl-logo-wrap">
   <img src="assets/bluelock_logo.png" alt="Blue Lock">
 </div>
