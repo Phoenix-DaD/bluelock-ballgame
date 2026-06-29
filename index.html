@@ -76,7 +76,6 @@ canvas {
   font-family: 'Roboto Condensed', sans-serif;
 }
 #mainMenu .stats-bar .yen { color: #ffd700; font-weight: 700; }
-#mainMenu .stats-bar .yen::before { content: '¥'; margin-right: 2px; }
 .menu-btn {
   width: 320px; padding: 18px 0; margin: 8px 0;
   font-size: 20px; font-weight: 700; border: none; border-radius: 30px;
@@ -174,31 +173,48 @@ canvas {
   opacity: 0;
 }
 #mainMenu .stats-bar {
-  gap: 16px;
+  gap: 24px;
   margin-bottom: 30px;
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
   animation: fadeUp 0.5s ease-out 0.4s forwards;
   opacity: 0;
+  font-family: 'Roboto Condensed', sans-serif;
 }
 #mainMenu .stats-bar span {
-  padding: 5px 14px;
-  border: 1px solid rgba(0, 212, 255, 0.15);
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.3);
+  padding: 0;
   position: relative;
 }
-#mainMenu .stats-bar span::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
-  opacity: 0.5;
+#mainMenu .stats-bar .stat-num {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 14px;
+  margin-left: 4px;
+}
+#mainMenu .stats-bar .stat-label {
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+#mainMenu .stats-bar .stat-divider {
+  width: 1px;
+  height: 16px;
+  background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+  align-self: center;
 }
 #mainMenu .stats-bar .yen {
   color: #ffd700;
-  border-color: rgba(255, 215, 0, 0.2);
+}
+#mainMenu .stats-bar .yen .stat-num::before {
+  content: '¥';
+  margin-right: 2px;
+  font-weight: 700;
+}
+#mainMenu .stats-bar .yen .stat-num {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(15px); }
@@ -909,9 +925,11 @@ Sign in with Google
 <h1>BLUE LOCK</h1>
 <div class="welcome-msg" id="welcomeMsg">Welcome, Striker</div>
 <div class="stats-bar" id="menuStats">
-<span>Wins: <span id="menuWins">0</span></span>
-<span>Rolls: <span id="menuRolls">5</span></span>
-<span class="yen"><span id="menuYen">0</span></span>
+<span><span class="stat-label">Wins</span><span class="stat-num" id="menuWins">0</span></span>
+<span class="stat-divider"></span>
+<span><span class="stat-label">Rolls</span><span class="stat-num" id="menuRolls">5</span></span>
+<span class="stat-divider"></span>
+<span class="yen"><span class="stat-label">Yen</span><span class="stat-num" id="menuYen">0</span></span>
 </div>
 <button class="menu-btn play" onclick="goToPlay()">PLAY</button>
 <button class="menu-btn customize" onclick="goToCharacter()">CUSTOMIZE CHARACTER</button>
