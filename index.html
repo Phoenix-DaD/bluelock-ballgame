@@ -2409,11 +2409,20 @@ class Player {
     let aiAccel = diff.aiAccel, aiDribbleDist = diff.aiDribbleDist, aiDribbleMiss = diff.aiDribbleMiss;
     let aiShootSpread = diff.aiShootSpread, aiShootPower = diff.aiShootPower, aiSideStep = diff.aiSideStep;
     let aiTackleRange = diff.aiTackleRange, aiTackleWindupMin = diff.aiTackleWindupMin, aiTackleWindupMax = diff.aiTackleWindupMax;
-    let aiOvershootChance = diff.aiOvershootChance, aiChaseSpd = diff.aiChaseSpd, shootThreshold = 220;
-    if (behavior === 'dribbler') { aiDribbleDist *= 1.4; aiDribbleMiss *= 0.5; aiShootSpread *= 1.3; aiShootPower *= 0.85; shootThreshold = 160; aiTackleRange *= 0.7; }
-    else if (behavior === 'defender') { aiTackleRange *= 1.3; aiTackleWindupMin = Math.max(2, aiTackleWindupMin * 0.6); aiTackleWindupMax = Math.max(5, aiTackleWindupMax * 0.6); aiDribbleMiss *= 1.5; aiChaseSpd *= 1.15; aiOvershootChance *= 1.5; aiSideStep *= 1.3; }
-    else if (behavior === 'forward') { aiAccel *= 1.2; aiShootPower *= 1.2; shootThreshold = 280; aiDribbleDist *= 0.6; aiDribbleMiss *= 1.8; aiTackleRange *= 0.8; aiSideStep *= 0.7; }
-    return { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, shootThreshold, diff };
+    let aiOvershootChance = diff.aiOvershootChance, aiChaseSpd = diff.aiChaseSpd, aiDashChance = diff.aiDashChance, aiPassChance = diff.aiPassChance;
+    let shootThreshold = 220;
+    if (behavior === 'dribbler') {
+      aiDribbleDist *= 1.6; aiDribbleMiss *= 0.3; aiShootSpread *= 1.5; aiShootPower *= 0.75;
+      shootThreshold = 140; aiTackleRange *= 0.6; aiSideStep *= 1.4; aiDashChance *= 1.3; aiPassChance *= 0.6;
+    } else if (behavior === 'defender') {
+      aiTackleRange *= 1.5; aiTackleWindupMin = Math.max(1, aiTackleWindupMin * 0.5); aiTackleWindupMax = Math.max(4, aiTackleWindupMax * 0.5);
+      aiDribbleMiss *= 1.6; aiChaseSpd *= 1.2; aiOvershootChance *= 1.8; aiSideStep *= 1.4; aiShootPower *= 0.7;
+      shootThreshold = 160; aiDashChance *= 1.2; aiPassChance *= 1.3;
+    } else if (behavior === 'forward') {
+      aiAccel *= 1.3; aiShootPower *= 1.3; shootThreshold = 320; aiDribbleDist *= 0.5; aiDribbleMiss *= 2.0;
+      aiTackleRange *= 0.7; aiSideStep *= 0.6; aiShootSpread *= 0.8; aiDashChance *= 1.4; aiPassChance *= 0.7;
+    }
+    return { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, aiDashChance, aiPassChance, shootThreshold, diff };
   }
   _clampSpeed() { const maxSpd = this.hasBall ? this.dribbleSpeed : this.maxSpeed; const spd = Math.hypot(this.vx, this.vy); if (spd > maxSpd && !this.isDashing) { this.vx = (this.vx / spd) * maxSpd; this.vy = (this.vy / spd) * maxSpd; } }
   // ─── 1v1 AI: Aggressive single opponent ───────────────────────────────
@@ -2428,15 +2437,23 @@ class Player {
       const targetX = this.team === 'red' ? 80 : WIDTH - 80, targetY = HEIGHT / 2 + Math.sin(Date.now() * 0.002) * 30;
       const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy);
       if (d > 5) { this.vx += (dx / d) * aiAccel; this.vy += (dy / d) * aiAccel; }
+      const behavior = this.character ? (this.character.behavior || 'allrounder') : 'allrounder';
       if (oppDist < aiDribbleDist && opp.isDashing && oppClosing && this.dribbleCooldown <= 0) { if (this.aiReactDelay === 0 && !this.aiDribbleWanted) { this.aiReactDelay = diff.aiReactMin + Math.floor(Math.random() * (diff.aiReactMax - diff.aiReactMin)); this.aiDribbleWanted = true; } }
       if (this.aiDribbleWanted && this.aiReactDelay <= 0) { this.aiDribbleWanted = false; if (Math.random() > aiDribbleMiss && oppDist < aiDribbleDist + 40) this.dribble(); }
       if (!opp.isDashing || oppDist > aiDribbleDist + 50) this.aiDribbleWanted = false;
+      // Dribblers: proactively dribble even without threat, to show off
+      if (behavior === 'dribbler' && this.dribbleCooldown <= 0 && this.dribbleTimer <= 0 && Math.random() < 0.03) this.dribble();
       const shootX = this.team === 'red' ? 0 : WIDTH;
       if ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold)) {
         const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread * (oppDist > 150 ? 1 : 0.3);
         this.kick(shootX - this.x, goalY - this.y); return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
+      // Forwards: dash toward goal for power shot when close
+      if (behavior === 'forward' && this.dashCooldown <= 0 && !this.isDashing && ((this.team === 'red' && this.x < 350) || (this.team === 'blue' && this.x > WIDTH - 350))) {
+        const goalDx = shootX - this.x, goalDy = (HEIGHT / 2) - this.y, goalDist = Math.hypot(goalDx, goalDy);
+        if (goalDist > 30) this.dash(goalDx, goalDy);
+      }
     } else {
       let targetX, targetY;
       if (ball.carrier && ball.carrier.team !== this.team) {
@@ -2585,12 +2602,19 @@ class Player {
       const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy);
       if (d > 5) { this.vx += (dx / d) * aiAccel; this.vy += (dy / d) * aiAccel; }
       if (opp && opp.isDashing && oppDist < aiDribbleDist + 20) { if (this.dribbleCooldown <= 0) this.dribble(); }
+      const behavior = this.character ? (this.character.behavior || 'allrounder') : 'allrounder';
+      if (behavior === 'dribbler' && this.dribbleCooldown <= 0 && this.dribbleTimer <= 0 && Math.random() < 0.025) this.dribble();
       const shootX = this.team === 'red' ? 0 : WIDTH;
       if ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold)) {
         const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread * 0.5;
         this.kick(shootX - this.x, goalY - this.y); return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
+      // Forwards: dash toward goal for power shot when close
+      if (behavior === 'forward' && this.dashCooldown <= 0 && !this.isDashing && ((this.team === 'red' && this.x < 350) || (this.team === 'blue' && this.x > WIDTH - 350))) {
+        const goalDx = shootX - this.x, goalDy = (HEIGHT / 2) - this.y, goalDist = Math.hypot(goalDx, goalDy);
+        if (goalDist > 30) this.dash(goalDx, goalDy);
+      }
     } else {
       let targetX, targetY;
       if (myRole === 'presser') {
