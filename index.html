@@ -1310,7 +1310,7 @@ function createCharacterWithRarity(charKey, rarity) {
       dribbleSpeed: base.modifiers.dribbleSpeed * mult,
       shootPower: base.modifiers.shootPower * mult,
       dashCooldown: Math.max(50, Math.round(base.modifiers.dashCooldown / mult)),
-      dribbleCooldown: Math.max(Math.round(base.modifiers.dribbleDuration * mult) + 60, Math.max(100, Math.round(base.modifiers.dribbleCooldown / mult))),
+      dribbleCooldown: Math.max(100, Math.round(base.modifiers.dribbleCooldown / mult)),
       dribbleDuration: Math.round(base.modifiers.dribbleDuration * mult)
     }
   };
@@ -2256,7 +2256,7 @@ const CHARACTERS = {
   isagi: { name: 'Isagi', desc: 'Spatial awareness. Sees the field like no one else.', behavior: 'allrounder', color: '#4A90E2', assignedRarity: 'Common', imgKey: 'isagi', stats: { speed: 70, tackle: 60, dribble: 75, shoot: 80, shield: 65 }, modifiers: { maxSpeed: 6.5, dribbleSpeed: 4.2, shootPower: 16, dashCooldown: 140, dribbleCooldown: 200, dribbleDuration: 120 } },
   bachira: { name: 'Bachira', desc: 'Creative dribbler. Unpredictable and free.', behavior: 'dribbler', color: '#2E8B57', assignedRarity: 'Epic', imgKey: 'bachira', stats: { speed: 85, tackle: 45, dribble: 95, shoot: 70, shield: 80 }, modifiers: { maxSpeed: 7.0, dribbleSpeed: 5.5, shootPower: 12, dashCooldown: 120, dribbleCooldown: 160, dribbleDuration: 160 } },
   rin: { name: 'Rin', desc: 'Cold precision. The perfect striker.', behavior: 'forward', color: '#1C1C1C', assignedRarity: 'Legendary', imgKey: 'rin', stats: { speed: 65, tackle: 55, dribble: 60, shoot: 95, shield: 50 }, modifiers: { maxSpeed: 6.0, dribbleSpeed: 3.8, shootPower: 20, dashCooldown: 150, dribbleCooldown: 280, dribbleDuration: 80 } },
-  nagi: { name: 'Nagi', desc: 'Lazy genius. Perfect first touch and control.', behavior: 'dribbler', color: '#C0C0C0', assignedRarity: 'Legendary', imgKey: 'nagi', stats: { speed: 60, tackle: 70, dribble: 90, shoot: 75, shield: 70 }, modifiers: { maxSpeed: 5.5, dribbleSpeed: 5.0, shootPower: 14, dashCooldown: 130, dribbleCooldown: 180, dribbleDuration: 140 } },
+  nagi: { name: 'Nagi', desc: 'Lazy genius. Perfect first touch and control.', behavior: 'dribbler', color: '#C0C0C0', assignedRarity: 'Legendary', imgKey: 'nagi', stats: { speed: 60, tackle: 70, dribble: 90, shoot: 75, shield: 70 }, modifiers: { maxSpeed: 5.5, dribbleSpeed: 5.0, shootPower: 14, dashCooldown: 130, dribbleCooldown: 300, dribbleDuration: 80 } },
   barou: { name: 'Barou', desc: 'The King. Physical, selfish, unstoppable.', behavior: 'defender', color: '#8B0000', assignedRarity: 'Legendary', imgKey: 'barou', stats: { speed: 50, tackle: 90, dribble: 50, shoot: 85, shield: 80 }, modifiers: { maxSpeed: 5.5, dribbleSpeed: 3.5, shootPower: 18, dashCooldown: 90, dribbleCooldown: 180, dribbleDuration: 150 } },
   chigiri: { name: 'Chigiri', desc: 'Speed demon. Outruns everyone on the pitch.', behavior: 'forward', color: '#FF4500', assignedRarity: 'Rare', imgKey: 'chigiri', stats: { speed: 95, tackle: 40, dribble: 75, shoot: 65, shield: 55 }, modifiers: { maxSpeed: 7.5, dribbleSpeed: 4.8, shootPower: 13, dashCooldown: 140, dribbleCooldown: 220, dribbleDuration: 90 } }
 };
