@@ -2263,9 +2263,9 @@ const CHARACTERS = {
 
 // ─── Difficulty Config ───────────────────────────────────────
 const DIFFICULTY = {
-  easy: { aiAccel: 0.18, aiPredict: 0.8, aiTackleRange: 18, aiTackleWindupMin: 25, aiTackleWindupMax: 40, aiDribbleDist: 70, aiReactMin: 15, aiReactMax: 25, aiDribbleMiss: 0.45, aiOvershootChance: 0.025, aiShootSpread: 110, aiShootPower: 7, aiSideStep: 0.2, aiChaseSpd: 0.28 },
-  medium: { aiAccel: 0.28, aiPredict: 1.5, aiTackleRange: 25, aiTackleWindupMin: 15, aiTackleWindupMax: 30, aiDribbleDist: 90, aiReactMin: 8, aiReactMax: 18, aiDribbleMiss: 0.25, aiOvershootChance: 0.015, aiShootSpread: 90, aiShootPower: 9, aiSideStep: 0.35, aiChaseSpd: 0.35 },
-  hard: { aiAccel: 0.38, aiPredict: 2.2, aiTackleRange: 35, aiTackleWindupMin: 5, aiTackleWindupMax: 12, aiDribbleDist: 120, aiReactMin: 2, aiReactMax: 6, aiDribbleMiss: 0.08, aiOvershootChance: 0.005, aiShootSpread: 50, aiShootPower: 11, aiSideStep: 0.55, aiChaseSpd: 0.45 }
+  easy: { aiAccel: 0.10, aiPredict: 0.3, aiTackleRange: 10, aiTackleWindupMin: 40, aiTackleWindupMax: 65, aiDribbleDist: 45, aiReactMin: 25, aiReactMax: 50, aiDribbleMiss: 0.75, aiOvershootChance: 0.10, aiShootSpread: 160, aiShootPower: 4, aiSideStep: 0.08, aiChaseSpd: 0.18, aiDashChance: 0.005, aiPassChance: 0.12 },
+  medium: { aiAccel: 0.28, aiPredict: 1.5, aiTackleRange: 25, aiTackleWindupMin: 15, aiTackleWindupMax: 30, aiDribbleDist: 90, aiReactMin: 8, aiReactMax: 18, aiDribbleMiss: 0.25, aiOvershootChance: 0.015, aiShootSpread: 90, aiShootPower: 9, aiSideStep: 0.35, aiChaseSpd: 0.35, aiDashChance: 0.02, aiPassChance: 0.35 },
+  hard: { aiAccel: 0.50, aiPredict: 3.0, aiTackleRange: 50, aiTackleWindupMin: 2, aiTackleWindupMax: 6, aiDribbleDist: 150, aiReactMin: 0, aiReactMax: 2, aiDribbleMiss: 0.0, aiOvershootChance: 0.0, aiShootSpread: 20, aiShootPower: 14, aiSideStep: 0.80, aiChaseSpd: 0.60, aiDashChance: 0.08, aiPassChance: 0.55 }
 };
 
 const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
@@ -2446,21 +2446,21 @@ class Player {
         const contactDist = this.radius + ball.carrier.radius + 2, inTackleRange = oppDist < contactDist + aiTackleRange;
         if (inTackleRange) { if (this.aiTackleWindup === 0) this.aiTackleTarget = Math.max(3, aiTackleWindupMin + Math.floor(Math.random() * (aiTackleWindupMax - aiTackleWindupMin))); this.aiTackleWindup++; } else { this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
         if (this.aiTackleWindup >= this.aiTackleTarget && this.aiTackleTarget > 0) { if (this.dashCooldown <= 0 && this.loseControl <= 0 && !this.isDashing) this.dash(ball.carrier.x - this.x, ball.carrier.y - this.y); this.aiTackleWindup = 0; this.aiTackleTarget = 0; }
-        // If not in tackle range, dash toward ball carrier more aggressively
+        // If not in tackle range, dash toward ball carrier
         else if (this.dashCooldown <= 0 && oppDist > aiTackleRange + 20 && oppDist < 200) {
           const dx = ball.carrier.x - this.x, dy = ball.carrier.y - this.y, d = Math.hypot(dx, dy);
-          if (d > 5 && Math.random() < 0.02) this.dash(dx, dy);
+          if (d > 5 && Math.random() < diff.aiDashChance) this.dash(dx, dy);
         }
       } else if (!ball.carrier) {
         const timeToBall = dist(this.x, this.y, ball.x, ball.y) / (aiChaseSpd * 20 + 0.1);
         targetX = ball.x + ball.vx * timeToBall;
         targetY = ball.y + ball.vy * timeToBall;
-        // Aggressive dash on loose ball
-        if (this.dashCooldown <= 0 && Math.random() < 0.15) { this.dash(ball.x - this.x, ball.y - this.y); }
+        // Dash on loose ball
+        if (this.dashCooldown <= 0 && Math.random() < diff.aiDashChance * 3) { this.dash(ball.x - this.x, ball.y - this.y); }
         this.aiTackleWindup = 0;
       } else { targetX = ball.x + ball.vx * 2; targetY = ball.y + ball.vy * 2; this.aiTackleWindup = 0; }
       if (this.aiOvershoot > 0) { targetX += (opp.x - this.x) * 0.8; targetY += (opp.y - this.y) * 0.8; }
-      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) ? aiChaseSpd : 0.32; this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
+      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) ? aiChaseSpd : Math.max(0.12, aiChaseSpd * 0.7); this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
       // Goal-line defense when opponent is close to scoring
       const goalX = this.team === 'red' ? WIDTH : 0;
       if (opp.hasBall && Math.abs(opp.x - goalX) < 200) {
@@ -2486,7 +2486,7 @@ class Player {
         const humanAhead = (this.team === 'blue' && human.x > this.x + 60) || (this.team === 'red' && human.x < this.x - 60);
         const distToHuman = dist(this.x, this.y, human.x, human.y);
         const humanClear = !nearestOpp || dist(nearestOpp.x, nearestOpp.y, human.x, human.y) > 120;
-        if (humanAhead && distToHuman < 300 && humanClear && Math.random() < 0.35) {
+        if (humanAhead && distToHuman < 300 && humanClear && Math.random() < diff.aiPassChance) {
           this._passTo(human.x, human.y); return;
         }
       }
@@ -2576,7 +2576,7 @@ class Player {
         const teammateAhead = (this.team === 'blue' && teammate.x > this.x + 40) || (this.team === 'red' && teammate.x < this.x - 40);
         const distToTeammate = dist(this.x, this.y, teammate.x, teammate.y);
         const teammateClear = !nearestOpp || dist(nearestOpp.x, nearestOpp.y, teammate.x, teammate.y) > 100;
-        if (teammateAhead && distToTeammate < 300 && teammateClear && Math.random() < 0.25) {
+        if (teammateAhead && distToTeammate < 300 && teammateClear && Math.random() < diff.aiPassChance) {
           this._passTo(teammate.x, teammate.y); return;
         }
       }
@@ -2631,7 +2631,7 @@ class Player {
           this.aiTackleWindup = 0;
         }
       }
-      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) || (teammate && teammate.hasBall) ? aiChaseSpd : 0.32; this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
+      if (!this.isDashing) { const dx = targetX - this.x, dy = targetY - this.y, d = Math.hypot(dx, dy); if (d > 5) { const spd = (ball.carrier && ball.carrier.team !== this.team) || (teammate && teammate.hasBall) ? aiChaseSpd : Math.max(0.12, aiChaseSpd * 0.7); this.vx += (dx / d) * spd; this.vy += (dy / d) * spd; } }
       // Goal-line defense when human approaches
       const goalX = this.team === 'red' ? 0 : WIDTH;
       if (human && human.hasBall && Math.abs(human.x - goalX) < 200) {
