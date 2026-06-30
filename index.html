@@ -1303,6 +1303,8 @@ function rollRarity() {
 function createCharacterWithRarity(charKey, rarity) {
   const base = CHARACTERS[charKey];
   const mult = getRarityMultiplier(rarity);
+  const dribbleCooldown = Math.max(100, Math.round(base.modifiers.dribbleCooldown / mult));
+  const dribbleDuration = Math.round(base.modifiers.dribbleDuration * mult);
   return {
     ...base,
     rarity,
@@ -1311,8 +1313,8 @@ function createCharacterWithRarity(charKey, rarity) {
       dribbleSpeed: base.modifiers.dribbleSpeed * mult,
       shootPower: base.modifiers.shootPower * mult,
       dashCooldown: Math.max(50, Math.round(base.modifiers.dashCooldown / mult)),
-      dribbleCooldown: Math.max(100, Math.round(base.modifiers.dribbleCooldown / mult)),
-      dribbleDuration: Math.round(base.modifiers.dribbleDuration * mult)
+      dribbleCooldown: Math.max(dribbleCooldown, dribbleDuration + 60),
+      dribbleDuration: dribbleDuration
     }
   };
 }
