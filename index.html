@@ -289,98 +289,100 @@ canvas {
 
 /* Party Widget */
 .party-widget {
-  position: fixed; bottom: 16px; left: 16px;
-  background: rgba(10, 10, 30, 0.92);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 10px 12px;
+  position: fixed; bottom: 20px; left: 20px;
+  background: rgba(10, 10, 30, 0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 14px 18px;
   z-index: 40;
   display: none;
   flex-direction: column;
-  gap: 8px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  gap: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.5);
 }
 .party-widget.active { display: flex; }
 .party-widget .party-header {
-  font-size: 10px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif;
   text-transform: uppercase; letter-spacing: 2px; color: #ffd700;
   display: flex; justify-content: space-between; align-items: center;
 }
 .party-avatars-row {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
 }
 .party-avatar {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 52px; height: 52px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif;
   text-transform: uppercase; letter-spacing: 1px;
   cursor: default; position: relative; flex-shrink: 0;
-  border: 2px solid;
+  border: 2.5px solid;
   transition: all 0.2s ease;
 }
 .party-avatar-self {
   background: linear-gradient(135deg, #00d4ff, #0066ff);
   border-color: rgba(0,212,255,0.5);
   color: white;
-  box-shadow: 0 0 12px rgba(0,212,255,0.3);
+  box-shadow: 0 0 16px rgba(0,212,255,0.35);
 }
 .party-avatar-leader-badge {
   position: absolute; bottom: -2px; right: -2px;
-  width: 14px; height: 14px; border-radius: 50%;
+  width: 16px; height: 16px; border-radius: 50%;
   background: #ffd700; color: #1a1a1a;
-  font-size: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 9px; display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(0,0,0,0.3);
+  font-weight: 700;
 }
 .party-avatar-friend {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.2);
   color: white; cursor: pointer;
+  font-size: 14px;
 }
 .party-avatar-friend:hover {
   border-color: rgba(0,212,255,0.5);
-  box-shadow: 0 0 12px rgba(0,212,255,0.2);
-  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(0,212,255,0.25);
+  transform: scale(1.08);
 }
 .party-avatar-invite {
   background: transparent;
-  border: 2px dashed rgba(255,255,255,0.25);
+  border: 2.5px dashed rgba(255,255,255,0.25);
   color: rgba(255,255,255,0.5);
-  font-size: 18px; font-weight: 300;
+  font-size: 22px; font-weight: 300;
   cursor: pointer;
 }
 .party-avatar-invite:hover {
   border-color: rgba(0,212,255,0.6);
   color: #00d4ff;
-  box-shadow: 0 0 12px rgba(0,212,255,0.15);
+  box-shadow: 0 0 16px rgba(0,212,255,0.2);
 }
 
 /* Party Friend Action Popup */
 #partyFriendPopup {
-  position: absolute;
-  bottom: 56px; left: 50%;
-  transform: translateX(-50%) scale(0.9);
-  background: rgba(10, 10, 30, 0.95);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  padding: 6px;
+  position: fixed;
+  background: rgba(10, 10, 30, 0.97);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 8px;
   display: none;
   flex-direction: column;
   gap: 4px;
-  min-width: 120px;
-  backdrop-filter: blur(8px);
-  z-index: 50;
+  min-width: 140px;
+  backdrop-filter: blur(10px);
+  z-index: 55;
   opacity: 0;
+  transform: scale(0.9);
   transition: all 0.15s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 #partyFriendPopup.show {
-  display: flex; opacity: 1; transform: translateX(-50%) scale(1);
+  display: flex; opacity: 1; transform: scale(1);
 }
 #partyFriendPopup .party-popup-btn {
-  padding: 8px 12px;
-  font-size: 11px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  padding: 10px 14px;
+  font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif;
   text-transform: uppercase; letter-spacing: 1px;
-  border: none; border-radius: 6px;
+  border: none; border-radius: 8px;
   background: transparent; color: white;
   cursor: pointer; text-align: left;
   transition: all 0.15s ease;
@@ -390,6 +392,13 @@ canvas {
 #partyFriendPopup .party-popup-btn.kick { color: #ff1744; }
 #partyFriendPopup .party-popup-btn.leader:hover { background: rgba(255,215,0,0.08); }
 #partyFriendPopup .party-popup-btn.kick:hover { background: rgba(255,23,68,0.08); }
+#partyFriendPopup .popup-status-msg {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Roboto Condensed', sans-serif;
+  text-align: center;
+}
 
 /* Party Invite Picker Modal */
 #partyInviteModal {
@@ -1786,10 +1795,17 @@ function selectPlayMode(mode) {
     }
   }
   
-  // 1v1 modes blocked when party has 2+ members (including leader)
+  // Party size-based mode restrictions
   const partySize = currentParty ? (currentParty.members || []).length + 1 : 1;
-  if (partySize >= 2 && (mode.includes('1v1') || mode === 'ranked_1v1' || mode === 'unranked_1v1')) {
+  const is1v1Mode = ['vs_comp_1v1', 'ranked_1v1', 'unranked_1v1'].includes(mode);
+  const is2v2Mode = ['vs_comp_2v2', 'ranked_2v2', 'unranked_2v2'].includes(mode);
+  
+  if (is1v1Mode && partySize >= 2) {
     alert('1v1 modes are not available with 2 or more party members. Switch to 2v2 or leave the party.');
+    return;
+  }
+  if (is2v2Mode && partySize < 2) {
+    alert('2v2 modes require at least 2 party members. Invite a friend or switch to 1v1.');
     return;
   }
   
@@ -1798,12 +1814,16 @@ function selectPlayMode(mode) {
   } else if (mode === 'vs_comp_1v1') {
     showDifficultyModal(mode);
   } else if (mode === 'vs_comp_2v2') {
-    // If in a party with 1 member, show party 2v2 config
+    // If in a party with exactly 1 member, show party 2v2 config (co-op vs vs)
     if (currentParty && currentParty.members && currentParty.members.length === 1) {
       openParty2v2Config(mode);
     } else {
       showDifficultyModal(mode);
     }
+  } else if (mode === 'ranked_1v1' || mode === 'unranked_1v1') {
+    alert(mode + ' matchmaking coming soon! For now, play VS Computer or Training.');
+  } else if (mode === 'ranked_2v2' || mode === 'unranked_2v2') {
+    alert(mode + ' matchmaking coming soon! For now, play VS Computer or Training.');
   } else {
     alert(mode + ' matchmaking coming soon! For now, play VS Computer or Training.');
   }
@@ -1960,7 +1980,7 @@ function updatePartyWidget() {
   `;
   
   members.forEach((m, i) => {
-    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(${i})" title="${m.display_name || 'Player'}${inMatch ? ' (Match in progress)' : ''}">${(m.display_name || 'P').charAt(0)}</div>`;
+    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(event, ${i})" title="${m.display_name || 'Player'}${inMatch ? ' (Match in progress)' : ''}">${(m.display_name || 'P').charAt(0)}</div>`;
   });
   
   if (!inMatch && members.length < 3) {
@@ -1999,19 +2019,35 @@ function renderPartyMembers() {
 let selectedPartyMemberIndex = null;
 let cachedFriendsList = [];
 
-function showPartyFriendPopup(index) {
+function showPartyFriendPopup(event, index) {
   selectedPartyMemberIndex = index;
   const popup = document.getElementById('partyFriendPopup');
   const isLeader = currentParty && currentParty.leader_id === currentUser.id;
   // During match: no actions available (only view info)
   if (inMatch) {
-    popup.innerHTML = `<div style="padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.5);font-family:'Roboto Condensed',sans-serif;">Match in progress</div>`;
+    popup.innerHTML = `<div class="popup-status-msg">Match in progress</div>`;
   } else {
     popup.innerHTML = `
       <button class="party-popup-btn leader" onclick="promotePartyMember()">Promote Leader</button>
       ${isLeader ? '<button class="party-popup-btn kick" onclick="kickPartyMemberFromPopup()">Kick</button>' : ''}
     `;
   }
+  // Position popup next to clicked avatar
+  const rect = event.target.getBoundingClientRect();
+  const popupWidth = 140;
+  const popupHeight = 80;
+  let left = rect.right + 8;
+  let top = rect.top - 8;
+  // Ensure popup stays within viewport
+  if (left + popupWidth > window.innerWidth) {
+    left = rect.left - popupWidth - 8;
+  }
+  if (top + popupHeight > window.innerHeight) {
+    top = window.innerHeight - popupHeight - 8;
+  }
+  if (top < 8) top = 8;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
   popup.classList.add('show');
   // Close when clicking elsewhere
   setTimeout(() => {
@@ -2020,7 +2056,10 @@ function showPartyFriendPopup(index) {
 }
 
 function closePartyFriendPopup() {
-  document.getElementById('partyFriendPopup').classList.remove('show');
+  const popup = document.getElementById('partyFriendPopup');
+  popup.classList.remove('show');
+  popup.style.left = '';
+  popup.style.top = '';
   selectedPartyMemberIndex = null;
 }
 
