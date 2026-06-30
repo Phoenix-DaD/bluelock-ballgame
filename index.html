@@ -698,11 +698,23 @@ canvas {
 .settings-section { width: 300px; margin: 10px 0; }
 #settingsPage h1 { font-size: 42px; margin-bottom: 15px; }
 .settings-label { color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 8px; font-family: 'Roboto Condensed', sans-serif; }
-.difficulty-selector { display: flex; gap: 10px; }
-.diff-btn { flex: 1; padding: 10px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: transparent; color: white; cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 14px; transition: all 0.2s; }
-.diff-btn:hover { border-color: rgba(0,150,255,0.5); }
-.diff-btn.selected { border-color: #00d4ff; background: rgba(0,150,255,0.15); }
 .logout-btn { background: linear-gradient(135deg, #ff1744, #b71c1c); margin-top: 20px; }
+
+/* Difficulty Modal */
+#difficultyModal { position: absolute; inset: 0; background: rgba(5,5,16,0.85); backdrop-filter: blur(8px); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; }
+#difficultyModal .diff-modal-title { font-size: 32px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 3px; color: #fff; margin-bottom: 4px; text-shadow: 0 0 20px rgba(0,212,255,0.3); }
+#difficultyModal .diff-modal-sub { font-size: 14px; color: rgba(255,255,255,0.5); font-family: 'Roboto Condensed', sans-serif; margin-bottom: 30px; letter-spacing: 1px; }
+#difficultyModal .diff-options { display: flex; gap: 16px; margin-bottom: 20px; }
+#difficultyModal .diff-option { width: 140px; height: 180px; border: 2px solid rgba(255,255,255,0.1); border-radius: 16px; background: rgba(255,255,255,0.03); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease; position: relative; overflow: hidden; }
+#difficultyModal .diff-option:hover { transform: translateY(-6px); border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.08); box-shadow: 0 0 30px rgba(0,212,255,0.15); }
+#difficultyModal .diff-option .diff-icon { font-size: 36px; margin-bottom: 12px; }
+#difficultyModal .diff-option .diff-name { font-size: 18px; font-weight: 700; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; color: #fff; }
+#difficultyModal .diff-option .diff-desc { font-size: 11px; color: rgba(255,255,255,0.5); font-family: 'Roboto Condensed', sans-serif; margin-top: 4px; text-align: center; padding: 0 12px; }
+#difficultyModal .diff-option[data-diff="easy"]:hover { border-color: rgba(76,175,80,0.4); background: rgba(76,175,80,0.08); box-shadow: 0 0 30px rgba(76,175,80,0.15); }
+#difficultyModal .diff-option[data-diff="medium"]:hover { border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.08); box-shadow: 0 0 30px rgba(0,212,255,0.15); }
+#difficultyModal .diff-option[data-diff="hard"]:hover { border-color: rgba(255,23,68,0.4); background: rgba(255,23,68,0.08); box-shadow: 0 0 30px rgba(255,23,68,0.15); }
+#difficultyModal .diff-back { padding: 10px 24px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; background: transparent; color: rgba(255,255,255,0.6); cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; transition: all 0.2s; }
+#difficultyModal .diff-back:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
 
 /* Play Character Select */
 .play-select-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; max-width: 700px; }
@@ -1044,18 +1056,34 @@ Sign in with Google
 <div id="settingsPage" class="screen-overlay hidden">
 <h1>Settings</h1>
 <div class="settings-section">
-<div class="settings-label">Difficulty</div>
-<div class="difficulty-selector">
-<button class="diff-btn" data-diff="easy" onclick="setDifficulty('easy')">Easy</button>
-<button class="diff-btn" data-diff="medium" onclick="setDifficulty('medium')">Medium</button>
-<button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">Hard</button>
-</div>
-</div>
-<div class="settings-section">
 <div class="settings-label">Account</div>
 <button class="menu-btn logout-btn" onclick="signOut()">Logout</button>
 </div>
 <button class="menu-btn back-btn" onclick="showMainMenu()">Back</button>
+</div>
+
+<!-- Difficulty Modal -->
+<div id="difficultyModal">
+<div class="diff-modal-title">Choose Difficulty</div>
+<div class="diff-modal-sub">VS Computer Match</div>
+<div class="diff-options">
+<div class="diff-option" data-diff="easy" onclick="confirmDifficulty('easy')">
+<div class="diff-icon">🟢</div>
+<div class="diff-name">Easy</div>
+<div class="diff-desc">Relaxed AI<br>+100 Yen on Win</div>
+</div>
+<div class="diff-option" data-diff="medium" onclick="confirmDifficulty('medium')">
+<div class="diff-icon">🔵</div>
+<div class="diff-name">Medium</div>
+<div class="diff-desc">Balanced AI<br>+1 Spin, +300 Yen</div>
+</div>
+<div class="diff-option" data-diff="hard" onclick="confirmDifficulty('hard')">
+<div class="diff-icon">🔴</div>
+<div class="diff-name">Hard</div>
+<div class="diff-desc">Ruthless AI<br>+2 Spins, +500 Yen</div>
+</div>
+</div>
+<button class="diff-back" onclick="closeDifficultyModal()">Back</button>
 </div>
 
 <!-- Play Character Select -->
@@ -1227,6 +1255,7 @@ window.addEventListener('focus', checkPendingReload);
 let currentUser = null;
 let playerData = { characters: [], stats: null };
 let selectedDifficulty = 'medium';
+let pendingVsMode = null;
 let playerCharacter = null;
 let aiCharacter = null;
 let teammateCharacter = null;
@@ -1449,7 +1478,6 @@ function showCharacterCollection() {
 function showSettings() {
   hideAllScreens(); gameState = 'settings';
   document.getElementById('settingsPage').classList.remove('hidden');
-  document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.diff === selectedDifficulty));
   checkPendingReload();
 }
 
@@ -1498,13 +1526,35 @@ function selectPlayMode(mode) {
   if (!char) { alert('Select a character first!'); return; }
   if (mode === 'training') {
     startTrainingMode(char.character_key, char.rarity);
-  } else if (mode === 'vs_comp_1v1') {
-    selectPlayCharacter(char.character_key, char.rarity, '1v1');
-  } else if (mode === 'vs_comp_2v2') {
-    selectPlayCharacter(char.character_key, char.rarity, '2v2');
+  } else if (mode === 'vs_comp_1v1' || mode === 'vs_comp_2v2') {
+    showDifficultyModal(mode);
   } else {
     alert(mode + ' matchmaking coming soon! For now, play VS Computer or Training.');
   }
+}
+
+// ─── Difficulty Modal ────────────────────────────────────────
+function showDifficultyModal(mode) {
+  pendingVsMode = mode;
+  document.getElementById('difficultyModal').style.display = 'flex';
+}
+function confirmDifficulty(difficulty) {
+  selectedDifficulty = difficulty;
+  document.getElementById('difficultyModal').style.display = 'none';
+  const char = playerData.characters[0];
+  if (!char) return;
+  if (pendingVsMode === 'vs_comp_1v1') {
+    selectPlayCharacter(char.character_key, char.rarity, '1v1');
+  } else if (pendingVsMode === 'vs_comp_2v2') {
+    selectPlayCharacter(char.character_key, char.rarity, '2v2');
+  }
+  pendingVsMode = null;
+}
+function closeDifficultyModal() {
+  document.getElementById('difficultyModal').style.display = 'none';
+  pendingVsMode = null;
+  // Return to play menu
+  showNelPlayMenu();
 }
 
 function showFriendsScreen() {
