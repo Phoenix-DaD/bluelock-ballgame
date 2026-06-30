@@ -289,42 +289,250 @@ canvas {
 
 /* Party Widget */
 .party-widget {
-  position: fixed; bottom: 20px; left: 20px;
-  background: rgba(10, 10, 30, 0.95);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 12px 16px;
-  min-width: 180px;
+  position: fixed; bottom: 16px; left: 16px;
+  background: rgba(10, 10, 30, 0.92);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 10px 12px;
   z-index: 40;
   display: none;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 .party-widget.active { display: flex; }
 .party-widget .party-header {
-  font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif;
-  text-transform: uppercase; letter-spacing: 1px; color: #ffd700;
-  border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;
+  font-size: 10px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 2px; color: #ffd700;
   display: flex; justify-content: space-between; align-items: center;
 }
-.party-widget .party-member {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: white; font-family: 'Roboto Condensed', sans-serif;
+.party-avatars-row {
+  display: flex; align-items: center; gap: 10px;
 }
-.party-widget .party-member .member-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: #00c853;
+.party-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 1px;
+  cursor: default; position: relative; flex-shrink: 0;
+  border: 2px solid;
+  transition: all 0.2s ease;
 }
-.party-widget .party-member .member-leader {
-  font-size: 10px; color: #ffd700; margin-left: 4px;
+.party-avatar-self {
+  background: linear-gradient(135deg, #00d4ff, #0066ff);
+  border-color: rgba(0,212,255,0.5);
+  color: white;
+  box-shadow: 0 0 12px rgba(0,212,255,0.3);
 }
-.party-widget .party-btn {
-  margin-top: 4px; padding: 6px 0; font-size: 11px;
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
-  background: transparent; color: rgba(255,255,255,0.6); cursor: pointer;
-  font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px;
-  transition: all 0.2s;
+.party-avatar-leader-badge {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #ffd700; color: #1a1a1a;
+  font-size: 8px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(0,0,0,0.3);
 }
-.party-widget .party-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+.party-avatar-friend {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.2);
+  color: white; cursor: pointer;
+}
+.party-avatar-friend:hover {
+  border-color: rgba(0,212,255,0.5);
+  box-shadow: 0 0 12px rgba(0,212,255,0.2);
+  transform: scale(1.05);
+}
+.party-avatar-invite {
+  background: transparent;
+  border: 2px dashed rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.5);
+  font-size: 18px; font-weight: 300;
+  cursor: pointer;
+}
+.party-avatar-invite:hover {
+  border-color: rgba(0,212,255,0.6);
+  color: #00d4ff;
+  box-shadow: 0 0 12px rgba(0,212,255,0.15);
+}
+
+/* Party Friend Action Popup */
+#partyFriendPopup {
+  position: absolute;
+  bottom: 56px; left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: rgba(10, 10, 30, 0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+  backdrop-filter: blur(8px);
+  z-index: 50;
+  opacity: 0;
+  transition: all 0.15s ease;
+}
+#partyFriendPopup.show {
+  display: flex; opacity: 1; transform: translateX(-50%) scale(1);
+}
+#partyFriendPopup .party-popup-btn {
+  padding: 8px 12px;
+  font-size: 11px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 1px;
+  border: none; border-radius: 6px;
+  background: transparent; color: white;
+  cursor: pointer; text-align: left;
+  transition: all 0.15s ease;
+}
+#partyFriendPopup .party-popup-btn:hover { background: rgba(255,255,255,0.08); }
+#partyFriendPopup .party-popup-btn.leader { color: #ffd700; }
+#partyFriendPopup .party-popup-btn.kick { color: #ff1744; }
+#partyFriendPopup .party-popup-btn.leader:hover { background: rgba(255,215,0,0.08); }
+#partyFriendPopup .party-popup-btn.kick:hover { background: rgba(255,23,68,0.08); }
+
+/* Party Invite Picker Modal */
+#partyInviteModal {
+  position: absolute; inset: 0;
+  background: rgba(5,5,16,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#partyInviteModal .invite-modal-title {
+  font-size: 24px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 3px; color: #fff;
+  margin-bottom: 4px; text-shadow: 0 0 20px rgba(0,212,255,0.3);
+}
+#partyInviteModal .invite-modal-sub {
+  font-size: 12px; color: rgba(255,255,255,0.5);
+  font-family: 'Roboto Condensed', sans-serif;
+  margin-bottom: 20px; letter-spacing: 1px;
+}
+#partyInviteModal .invite-friends-list {
+  width: 320px; max-height: 240px;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+  padding-right: 4px;
+}
+#partyInviteModal .invite-friends-list::-webkit-scrollbar { width: 4px; }
+#partyInviteModal .invite-friends-list::-webkit-scrollbar-track { background: transparent; }
+#partyInviteModal .invite-friends-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+#partyInviteModal .invite-friend-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#partyInviteModal .invite-friend-item:hover {
+  background: rgba(0,212,255,0.08);
+  border-color: rgba(0,212,255,0.2);
+}
+#partyInviteModal .invite-friend-item .friend-name {
+  font-size: 13px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  color: white; letter-spacing: 1px;
+}
+#partyInviteModal .invite-friend-item .invite-btn {
+  padding: 4px 12px; font-size: 10px;
+  border: 1px solid rgba(0,212,255,0.3); border-radius: 4px;
+  background: transparent; color: #00d4ff;
+  font-family: 'Oswald', sans-serif; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s;
+}
+#partyInviteModal .invite-friend-item .invite-btn:hover {
+  background: rgba(0,212,255,0.15);
+}
+#partyInviteModal .no-friends-msg {
+  text-align: center; color: rgba(255,255,255,0.4);
+  font-family: 'Roboto Condensed', sans-serif; font-size: 13px;
+  margin-bottom: 16px; line-height: 1.5;
+}
+#partyInviteModal .invite-back {
+  padding: 8px 24px; margin-top: 16px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+  background: transparent; color: rgba(255,255,255,0.6);
+  cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 2px; transition: all 0.2s;
+}
+#partyInviteModal .invite-back:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+#partyInviteModal .no-friends-actions {
+  display: flex; gap: 10px; margin-top: 12px;
+}
+#partyInviteModal .no-friends-actions button {
+  padding: 8px 20px; font-size: 11px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+  background: transparent; color: white; cursor: pointer;
+  font-family: 'Oswald', sans-serif; text-transform: uppercase;
+  letter-spacing: 1px; transition: all 0.2s;
+}
+#partyInviteModal .no-friends-actions button:hover {
+  border-color: rgba(0,212,255,0.4); color: #00d4ff;
+}
+
+/* 2v2 Party Config Modal */
+#party2v2ConfigModal {
+  position: absolute; inset: 0;
+  background: rgba(5,5,16,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#party2v2ConfigModal .config-title {
+  font-size: 24px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 3px; color: #fff;
+  margin-bottom: 4px; text-shadow: 0 0 20px rgba(0,212,255,0.3);
+}
+#party2v2ConfigModal .config-sub {
+  font-size: 12px; color: rgba(255,255,255,0.5);
+  font-family: 'Roboto Condensed', sans-serif;
+  margin-bottom: 24px; letter-spacing: 1px;
+}
+#party2v2ConfigModal .config-options {
+  display: flex; gap: 16px;
+}
+#party2v2ConfigModal .config-option {
+  width: 200px; padding: 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  cursor: pointer; text-align: center;
+  transition: all 0.3s ease;
+}
+#party2v2ConfigModal .config-option:hover {
+  border-color: rgba(0,212,255,0.4);
+  background: rgba(0,212,255,0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,212,255,0.1);
+}
+#party2v2ConfigModal .config-option .config-icon {
+  font-size: 28px; margin-bottom: 8px;
+}
+#party2v2ConfigModal .config-option .config-name {
+  font-size: 14px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 1px; color: #fff;
+  margin-bottom: 4px;
+}
+#party2v2ConfigModal .config-option .config-desc {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  font-family: 'Roboto Condensed', sans-serif; line-height: 1.4;
+}
+#party2v2ConfigModal .config-back {
+  padding: 8px 24px; margin-top: 24px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+  background: transparent; color: rgba(255,255,255,0.6);
+  cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 2px; transition: all 0.2s;
+}
+#party2v2ConfigModal .config-back:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
 
 /* Friends Screen */
 #friendsScreen { padding: 20px 0; }
@@ -987,11 +1195,48 @@ Sign in with Google
 <button class="menu-btn settings" onclick="goToSettings()">SETTINGS</button>
 </div>
 
-<!-- Party Widget (persistent, shown on all screens) -->
+<!-- Party Widget (bottom left, persistent) -->
 <div class="party-widget" id="partyWidget">
-  <div class="party-header">PARTY <span id="partyCount">0/4</span></div>
-  <div id="partyMembersList"></div>
-  <button class="party-btn" onclick="showPartyMenu()">Manage Party</button>
+  <div class="party-header">PARTY <span id="partyCount">1/4</span></div>
+  <div class="party-avatars-row" id="partyAvatarsRow">
+    <div class="party-avatar party-avatar-self" id="partySelfAvatar" title="You (Leader)">
+      You
+      <span class="party-avatar-leader-badge" id="partyLeaderBadge" style="display:none">★</span>
+    </div>
+  </div>
+</div>
+
+<!-- Party Friend Action Popup -->
+<div id="partyFriendPopup">
+  <button class="party-popup-btn leader" onclick="promotePartyMember()">Promote Leader</button>
+  <button class="party-popup-btn kick" onclick="kickPartyMember()">Kick</button>
+</div>
+
+<!-- Party Invite Picker Modal -->
+<div id="partyInviteModal">
+  <div class="invite-modal-title">Invite to Party</div>
+  <div class="invite-modal-sub">Select a friend to join your squad</div>
+  <div class="invite-friends-list" id="partyInviteList"></div>
+  <button class="invite-back" onclick="closePartyInviteModal()">Cancel</button>
+</div>
+
+<!-- 2v2 Party Config Modal -->
+<div id="party2v2ConfigModal">
+  <div class="config-title">2v2 Configuration</div>
+  <div class="config-sub">Choose your team setup</div>
+  <div class="config-options">
+    <div class="config-option" onclick="startParty2v2('coop')">
+      <div class="config-icon">🤝</div>
+      <div class="config-name">Co-op</div>
+      <div class="config-desc">Party vs 2 AI opponents<br>Work together</div>
+    </div>
+    <div class="config-option" onclick="startParty2v2('vs')">
+      <div class="config-icon">⚔️</div>
+      <div class="config-name">Versus</div>
+      <div class="config-desc">You + AI vs Friend + AI<br>Compete!</div>
+    </div>
+  </div>
+  <button class="config-back" onclick="closeParty2v2Config()">Cancel</button>
 </div>
 
 <!-- Friends Screen -->
@@ -1262,6 +1507,7 @@ let teammateCharacter = null;
 let opponent1Character = null;
 let opponent2Character = null;
 let lastOpponentKeys = []; // track recent opponents to avoid repeats
+let party2v2Config = null; // 'coop' or 'vs' for party 2v2 modes
 let gameState = 'login';
 let gameOver = false;
 let scores = { blue: 0, red: 0 };
@@ -1501,7 +1747,11 @@ function hideAllScreens() {
   document.getElementById('winner').style.display = 'none';
   document.getElementById('goalFlash').style.display = 'none';
   document.getElementById('goalText').style.display = 'none';
-  document.getElementById('partyWidget').classList.remove('active');
+  document.getElementById('partyInviteModal').style.display = 'none';
+  document.getElementById('party2v2ConfigModal').style.display = 'none';
+  document.getElementById('partyFriendPopup').classList.remove('show');
+  if (currentParty) { document.getElementById('partyWidget').classList.add('active'); }
+  else { document.getElementById('partyWidget').classList.remove('active'); }
 }
 
 function goToPlay() {
@@ -1528,10 +1778,26 @@ function selectPlayMode(mode) {
   selectedPlayMode = mode;
   const char = playerData.characters[0];
   if (!char) { alert('Select a character first!'); return; }
+  
+  // Party leader check: only leader can start games when in a party
+  if (currentParty && currentParty.members && currentParty.members.length > 0) {
+    if (currentParty.leader_id !== currentUser.id) {
+      alert('Only the party leader can start games.');
+      return;
+    }
+  }
+  
   if (mode === 'training') {
     startTrainingMode(char.character_key, char.rarity);
-  } else if (mode === 'vs_comp_1v1' || mode === 'vs_comp_2v2') {
+  } else if (mode === 'vs_comp_1v1') {
     showDifficultyModal(mode);
+  } else if (mode === 'vs_comp_2v2') {
+    // If in a party with 1 member, show party 2v2 config
+    if (currentParty && currentParty.members && currentParty.members.length === 1) {
+      openParty2v2Config(mode);
+    } else {
+      showDifficultyModal(mode);
+    }
   } else {
     alert(mode + ' matchmaking coming soon! For now, play VS Computer or Training.');
   }
@@ -1674,25 +1940,41 @@ async function loadParty() {
 function updatePartyWidget() {
   if (!currentParty) { document.getElementById('partyWidget').classList.remove('active'); return; }
   const members = currentParty.members || [];
+  const isLeader = currentParty.leader_id === currentUser.id;
   document.getElementById('partyWidget').classList.add('active');
   document.getElementById('partyCount').textContent = (members.length + 1) + '/4';
-  const list = document.getElementById('partyMembersList');
-  list.innerHTML = `
-    <div class="party-member"><span class="member-dot"></span> You${currentParty.leader_id === currentUser.id ? '<span class="member-leader">★</span>' : ''}</div>
-    ${members.map(m => `<div class="party-member"><span class="member-dot"></span> ${m.display_name || 'Player'}</div>`).join('')}
+  document.getElementById('partyLeaderBadge').style.display = isLeader ? 'flex' : 'none';
+  
+  const row = document.getElementById('partyAvatarsRow');
+  let html = `
+    <div class="party-avatar party-avatar-self" id="partySelfAvatar" title="You${isLeader ? ' (Leader)' : ''}">
+      You
+      <span class="party-avatar-leader-badge" id="partyLeaderBadge" style="display:${isLeader ? 'flex' : 'none'}">★</span>
+    </div>
   `;
+  
+  members.forEach((m, i) => {
+    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(${i})" title="${m.display_name || 'Player'}">${(m.display_name || 'P').charAt(0)}</div>`;
+  });
+  
+  if (members.length < 3) {
+    html += `<div class="party-avatar party-avatar-invite" onclick="openPartyInvitePicker()" title="Invite friend">+</div>`;
+  }
+  
+  row.innerHTML = html;
 }
 
 function renderPartyMembers() {
   const container = document.getElementById('partyMembersDisplay');
   if (!currentParty) { container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;">Not in a party. Invite a friend!</div>'; return; }
   const members = currentParty.members || [];
+  const isLeader = currentParty.leader_id === currentUser.id;
   container.innerHTML = `
     <div class="party-member-card">
       <div class="party-member-avatar"><img src="" alt=""></div>
       <div class="party-member-info">
-        <div class="name">You ${currentParty.leader_id === currentUser.id ? '★' : ''}</div>
-        <div class="role">${currentParty.leader_id === currentUser.id ? 'Leader' : 'Member'}</div>
+        <div class="name">You ${isLeader ? '★' : ''}</div>
+        <div class="role">${isLeader ? 'Leader' : 'Member'}</div>
       </div>
     </div>
     ${members.map((m, i) => `
@@ -1702,28 +1984,55 @@ function renderPartyMembers() {
         <div class="name">${m.display_name || 'Player'}</div>
         <div class="role">Member</div>
       </div>
-      ${currentParty.leader_id === currentUser.id ? `<button class="party-member-remove" onclick="kickPartyMember(${i})">KICK</button>` : ''}
+      ${isLeader ? `<button class="party-member-remove" onclick="kickPartyMember(${i})">KICK</button>` : ''}
     </div>
     `).join('')}
   `;
 }
 
-async function inviteToParty(friendId) {
-  if (!currentParty) {
-    // Create a new party
-    const { data: newParty } = await supabaseClient.from('parties').insert({
-      leader_id: currentUser.id, members: [], status: 'open'
-    }).select();
-    if (!newParty) { alert('Failed to create party.'); return; }
-    currentParty = newParty[0];
-  }
-  // Add friend to party
+let selectedPartyMemberIndex = null;
+let cachedFriendsList = [];
+
+function showPartyFriendPopup(index) {
+  selectedPartyMemberIndex = index;
+  const popup = document.getElementById('partyFriendPopup');
+  const isLeader = currentParty && currentParty.leader_id === currentUser.id;
+  popup.innerHTML = `
+    <button class="party-popup-btn leader" onclick="promotePartyMember()">Promote Leader</button>
+    ${isLeader ? '<button class="party-popup-btn kick" onclick="kickPartyMemberFromPopup()">Kick</button>' : ''}
+  `;
+  popup.classList.add('show');
+  // Close when clicking elsewhere
+  setTimeout(() => {
+    document.addEventListener('click', closePartyFriendPopup, { once: true });
+  }, 10);
+}
+
+function closePartyFriendPopup() {
+  document.getElementById('partyFriendPopup').classList.remove('show');
+  selectedPartyMemberIndex = null;
+}
+
+async function promotePartyMember() {
+  if (selectedPartyMemberIndex === null || !currentParty) return;
   const members = currentParty.members || [];
-  members.push({ user_id: friendId, display_name: friendId });
-  await supabaseClient.from('parties').update({ members }).eq('id', currentParty.id);
+  const member = members[selectedPartyMemberIndex];
+  if (!member) return;
+  // Swap leader
+  const newLeader = { user_id: member.user_id, display_name: member.display_name };
+  members[selectedPartyMemberIndex] = { user_id: currentUser.id, display_name: 'You' };
+  currentParty.leader_id = member.user_id;
   currentParty.members = members;
+  await supabaseClient.from('parties').update({ leader_id: member.user_id, members }).eq('id', currentParty.id);
+  closePartyFriendPopup();
   updatePartyWidget();
   renderPartyMembers();
+}
+
+async function kickPartyMemberFromPopup() {
+  if (selectedPartyMemberIndex === null || !currentParty) return;
+  await kickPartyMember(selectedPartyMemberIndex);
+  closePartyFriendPopup();
 }
 
 async function kickPartyMember(index) {
@@ -1734,6 +2043,100 @@ async function kickPartyMember(index) {
   currentParty.members = members;
   updatePartyWidget();
   renderPartyMembers();
+}
+
+async function openPartyInvitePicker() {
+  if (!currentUser) return;
+  const modal = document.getElementById('partyInviteModal');
+  const list = document.getElementById('partyInviteList');
+  
+  // Load friends if not cached
+  if (cachedFriendsList.length === 0) {
+    const { data: friends } = await supabaseClient
+      .from('friends').select('*')
+      .or('friend_id.eq.' + currentUser.id + ',user_id.eq.' + currentUser.id)
+      .eq('status', 'accepted');
+    cachedFriendsList = friends || [];
+  }
+  
+  const currentMemberIds = new Set((currentParty?.members || []).map(m => m.user_id));
+  const availableFriends = cachedFriendsList.filter(r => {
+    const isSender = r.user_id === currentUser.id;
+    const otherId = isSender ? r.friend_id : r.user_id;
+    return !currentMemberIds.has(otherId);
+  });
+  
+  if (availableFriends.length === 0) {
+    if (cachedFriendsList.length === 0) {
+      list.innerHTML = `
+        <div class="no-friends-msg">
+          No friends yet.<br>Build your squad first!
+        </div>
+        <div class="no-friends-actions">
+          <button onclick="closePartyInviteModal();showFriendsScreen()">Open Friends</button>
+        </div>
+      `;
+    } else {
+      list.innerHTML = `
+        <div class="no-friends-msg">
+          All friends are already in your party.<br>Remove someone to invite a new friend.
+        </div>
+      `;
+    }
+  } else {
+    list.innerHTML = availableFriends.map(r => {
+      const isSender = r.user_id === currentUser.id;
+      const otherId = isSender ? r.friend_id : r.user_id;
+      return `
+        <div class="invite-friend-item" onclick="inviteToParty('${otherId}');closePartyInviteModal();">
+          <div class="friend-name">${otherId}</div>
+          <div class="invite-btn">INVITE</div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  modal.style.display = 'flex';
+}
+
+function closePartyInviteModal() {
+  document.getElementById('partyInviteModal').style.display = 'none';
+}
+
+async function inviteToParty(friendId) {
+  if (!currentParty) {
+    const { data: newParty } = await supabaseClient.from('parties').insert({
+      leader_id: currentUser.id, members: [], status: 'open'
+    }).select();
+    if (!newParty) { alert('Failed to create party.'); return; }
+    currentParty = newParty[0];
+  }
+  const members = currentParty.members || [];
+  members.push({ user_id: friendId, display_name: friendId });
+  await supabaseClient.from('parties').update({ members }).eq('id', currentParty.id);
+  currentParty.members = members;
+  updatePartyWidget();
+  renderPartyMembers();
+}
+
+let pendingParty2v2Mode = null;
+
+function openParty2v2Config(mode) {
+  pendingParty2v2Mode = mode;
+  document.getElementById('party2v2ConfigModal').style.display = 'flex';
+}
+
+function closeParty2v2Config() {
+  document.getElementById('party2v2ConfigModal').style.display = 'none';
+  pendingParty2v2Mode = null;
+}
+
+function startParty2v2(config) {
+  party2v2Config = config;
+  closeParty2v2Config();
+  // After picking config, show difficulty modal
+  showDifficultyModal(pendingParty2v2Mode);
+  pendingParty2v2Mode = null;
 }
 
 // ─── Yen & Display ──────────────────────────────────────────────
@@ -1770,10 +2173,6 @@ function showMainMenu() {
   }
   loadParty();
   checkPendingReload();
-}
-
-function hideAllScreens() {
-  document.querySelectorAll('.screen-overlay').forEach(s => s.classList.add('hidden'));
 }
 
 // ─── Collection Grid ──────────────────────────────────────────────
@@ -2039,16 +2438,31 @@ function selectPlayCharacter(charKey, rarity, mode) {
   }
 
   if (is2v2) {
-    // 2v2: create teammate + 2 opponents
-    const teammateKey = pickOpponentKey([charKey]);
-    teammateCharacter = createCharacterWithRarity(teammateKey, rollRarity());
-    const opp1Key = pickOpponentKey([charKey, teammateKey]);
-    opponent1Character = createCharacterWithRarity(opp1Key, rollRarity());
-    const opp2Key = pickOpponentKey([charKey, teammateKey, opp1Key]);
-    opponent2Character = createCharacterWithRarity(opp2Key, rollRarity());
-    // Track opponents for future variety
-    lastOpponentKeys.push(opp1Key, opp2Key);
-    if (lastOpponentKeys.length > 4) lastOpponentKeys = lastOpponentKeys.slice(-4);
+    if (party2v2Config === 'vs' && currentParty && currentParty.members && currentParty.members.length > 0) {
+      // VS mode: Player + AI vs Party Member + AI
+      const teammateKey = pickOpponentKey([charKey]);
+      teammateCharacter = createCharacterWithRarity(teammateKey, rollRarity());
+      // Party member becomes opponent1 (their character is random for now)
+      const opp1Key = pickOpponentKey([charKey, teammateKey]);
+      opponent1Character = createCharacterWithRarity(opp1Key, rollRarity());
+      // AI teammate for party member
+      const opp2Key = pickOpponentKey([charKey, teammateKey, opp1Key]);
+      opponent2Character = createCharacterWithRarity(opp2Key, rollRarity());
+      lastOpponentKeys.push(opp1Key, opp2Key);
+      if (lastOpponentKeys.length > 4) lastOpponentKeys = lastOpponentKeys.slice(-4);
+    } else {
+      // Co-op or normal 2v2: Player + Teammate vs 2 AI opponents
+      const teammateKey = pickOpponentKey([charKey]);
+      teammateCharacter = createCharacterWithRarity(teammateKey, rollRarity());
+      const opp1Key = pickOpponentKey([charKey, teammateKey]);
+      opponent1Character = createCharacterWithRarity(opp1Key, rollRarity());
+      const opp2Key = pickOpponentKey([charKey, teammateKey, opp1Key]);
+      opponent2Character = createCharacterWithRarity(opp2Key, rollRarity());
+      lastOpponentKeys.push(opp1Key, opp2Key);
+      if (lastOpponentKeys.length > 4) lastOpponentKeys = lastOpponentKeys.slice(-4);
+    }
+    // Reset party config after use
+    party2v2Config = null;
   } else {
     // 1v1: single opponent (allow mirror matches for variety)
     const aiKey = pickOpponentKey([]);
