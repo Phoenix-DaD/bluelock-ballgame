@@ -1195,8 +1195,8 @@ Sign in with Google
 <button class="menu-btn settings" onclick="goToSettings()">SETTINGS</button>
 </div>
 
-<!-- Party Widget (bottom left, persistent) -->
-<div class="party-widget" id="partyWidget">
+<!-- Party Widget (bottom left, always visible) -->
+<div class="party-widget active" id="partyWidget">
   <div class="party-header">PARTY <span id="partyCount">1/4</span></div>
   <div class="party-avatars-row" id="partyAvatarsRow">
     <div class="party-avatar party-avatar-self" id="partySelfAvatar" title="You (Leader)">
@@ -1509,6 +1509,7 @@ let opponent2Character = null;
 let lastOpponentKeys = []; // track recent opponents to avoid repeats
 let party2v2Config = null; // 'coop' or 'vs' for party 2v2 modes
 let gameState = 'login';
+let inMatch = false;
 let gameOver = false;
 let scores = { blue: 0, red: 0 };
 let currentGameMode = '1v1';
@@ -1750,8 +1751,6 @@ function hideAllScreens() {
   document.getElementById('partyInviteModal').style.display = 'none';
   document.getElementById('party2v2ConfigModal').style.display = 'none';
   document.getElementById('partyFriendPopup').classList.remove('show');
-  if (currentParty) { document.getElementById('partyWidget').classList.add('active'); }
-  else { document.getElementById('partyWidget').classList.remove('active'); }
 }
 
 function goToPlay() {
@@ -1785,6 +1784,13 @@ function selectPlayMode(mode) {
       alert('Only the party leader can start games.');
       return;
     }
+  }
+  
+  // 1v1 modes blocked when party has 2+ members (including leader)
+  const partySize = currentParty ? (currentParty.members || []).length + 1 : 1;
+  if (partySize >= 2 && (mode.includes('1v1') || mode === 'ranked_1v1' || mode === 'unranked_1v1')) {
+    alert('1v1 modes are not available with 2 or more party members. Switch to 2v2 or leave the party.');
+    return;
   }
   
   if (mode === 'training') {
@@ -1933,16 +1939,16 @@ async function loadParty() {
     updatePartyWidget();
   } else {
     currentParty = null;
-    document.getElementById('partyWidget').classList.remove('active');
+    updatePartyWidget();
   }
 }
 
 function updatePartyWidget() {
-  if (!currentParty) { document.getElementById('partyWidget').classList.remove('active'); return; }
-  const members = currentParty.members || [];
-  const isLeader = currentParty.leader_id === currentUser.id;
+  const members = currentParty ? (currentParty.members || []) : [];
+  const isLeader = currentParty ? currentParty.leader_id === currentUser.id : true;
+  const memberCount = members.length + 1;
   document.getElementById('partyWidget').classList.add('active');
-  document.getElementById('partyCount').textContent = (members.length + 1) + '/4';
+  document.getElementById('partyCount').textContent = memberCount + '/4';
   document.getElementById('partyLeaderBadge').style.display = isLeader ? 'flex' : 'none';
   
   const row = document.getElementById('partyAvatarsRow');
@@ -1954,10 +1960,10 @@ function updatePartyWidget() {
   `;
   
   members.forEach((m, i) => {
-    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(${i})" title="${m.display_name || 'Player'}">${(m.display_name || 'P').charAt(0)}</div>`;
+    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(${i})" title="${m.display_name || 'Player'}${inMatch ? ' (Match in progress)' : ''}">${(m.display_name || 'P').charAt(0)}</div>`;
   });
   
-  if (members.length < 3) {
+  if (!inMatch && members.length < 3) {
     html += `<div class="party-avatar party-avatar-invite" onclick="openPartyInvitePicker()" title="Invite friend">+</div>`;
   }
   
@@ -1984,7 +1990,7 @@ function renderPartyMembers() {
         <div class="name">${m.display_name || 'Player'}</div>
         <div class="role">Member</div>
       </div>
-      ${isLeader ? `<button class="party-member-remove" onclick="kickPartyMember(${i})">KICK</button>` : ''}
+      ${isLeader && !inMatch ? `<button class="party-member-remove" onclick="kickPartyMember(${i})">KICK</button>` : ''}
     </div>
     `).join('')}
   `;
@@ -1997,10 +2003,15 @@ function showPartyFriendPopup(index) {
   selectedPartyMemberIndex = index;
   const popup = document.getElementById('partyFriendPopup');
   const isLeader = currentParty && currentParty.leader_id === currentUser.id;
-  popup.innerHTML = `
-    <button class="party-popup-btn leader" onclick="promotePartyMember()">Promote Leader</button>
-    ${isLeader ? '<button class="party-popup-btn kick" onclick="kickPartyMemberFromPopup()">Kick</button>' : ''}
-  `;
+  // During match: no actions available (only view info)
+  if (inMatch) {
+    popup.innerHTML = `<div style="padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.5);font-family:'Roboto Condensed',sans-serif;">Match in progress</div>`;
+  } else {
+    popup.innerHTML = `
+      <button class="party-popup-btn leader" onclick="promotePartyMember()">Promote Leader</button>
+      ${isLeader ? '<button class="party-popup-btn kick" onclick="kickPartyMemberFromPopup()">Kick</button>' : ''}
+    `;
+  }
   popup.classList.add('show');
   // Close when clicking elsewhere
   setTimeout(() => {
@@ -2014,6 +2025,7 @@ function closePartyFriendPopup() {
 }
 
 async function promotePartyMember() {
+  if (inMatch) { alert('Cannot promote during a match.'); return; }
   if (selectedPartyMemberIndex === null || !currentParty) return;
   const members = currentParty.members || [];
   const member = members[selectedPartyMemberIndex];
@@ -2030,12 +2042,14 @@ async function promotePartyMember() {
 }
 
 async function kickPartyMemberFromPopup() {
+  if (inMatch) { alert('Cannot kick during a match.'); return; }
   if (selectedPartyMemberIndex === null || !currentParty) return;
   await kickPartyMember(selectedPartyMemberIndex);
   closePartyFriendPopup();
 }
 
 async function kickPartyMember(index) {
+  if (inMatch) { alert('Cannot kick during a match.'); return; }
   if (!currentParty || currentParty.leader_id !== currentUser.id) return;
   const members = currentParty.members || [];
   members.splice(index, 1);
@@ -2046,6 +2060,7 @@ async function kickPartyMember(index) {
 }
 
 async function openPartyInvitePicker() {
+  if (inMatch) { alert('Cannot invite during a match.'); return; }
   if (!currentUser) return;
   const modal = document.getElementById('partyInviteModal');
   const list = document.getElementById('partyInviteList');
@@ -2104,6 +2119,7 @@ function closePartyInviteModal() {
 }
 
 async function inviteToParty(friendId) {
+  if (inMatch) { alert('Cannot invite during a match.'); return; }
   if (!currentParty) {
     const { data: newParty } = await supabaseClient.from('parties').insert({
       leader_id: currentUser.id, members: [], status: 'open'
@@ -2629,6 +2645,7 @@ function selectPlayCharacter(charKey, rarity, mode) {
       document.getElementById('leaveBtn').style.display = 'block';
     }
     gameState = 'playing';
+    inMatch = true;
     document.body.style.cursor = 'crosshair';
     gameOver = false;
     scores = { blue: 0, red: 0 };
@@ -3210,7 +3227,7 @@ function triggerGoalEffect() {
 }
 function updateScore() { document.getElementById('score').textContent = `${scores.blue} - ${scores.red}`; }
 function endGame(text, isWin) {
-  gameOver = true; gameState = 'gameover';
+  gameOver = true; gameState = 'gameover'; inMatch = false;
   if (window._goalTimeout) { clearTimeout(window._goalTimeout); window._goalTimeout = null; }
   document.getElementById('goalFlash').style.display = 'none'; document.getElementById('goalText').style.display = 'none';
 
@@ -3322,6 +3339,7 @@ function startTrainingMode(charKey, rarity) {
   document.getElementById('gameCanvas').style.display = 'block';
   document.getElementById('leaveBtn').style.display = 'block';
   gameState = 'playing';
+  inMatch = true;
   document.body.style.cursor = 'crosshair';
   gameOver = false;
   scores = { blue: 0, red: 0 };
