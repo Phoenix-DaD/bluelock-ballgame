@@ -1261,6 +1261,7 @@ let aiCharacter = null;
 let teammateCharacter = null;
 let opponent1Character = null;
 let opponent2Character = null;
+let lastOpponentKeys = []; // track recent opponents to avoid repeats
 let gameState = 'login';
 let gameOver = false;
 let scores = { blue: 0, red: 0 };
@@ -1333,6 +1334,7 @@ async function signOut() {
   await supabaseClient.auth.signOut();
   currentUser = null;
   playerData = { characters: [], stats: null };
+  lastOpponentKeys = [];
   showLoginPage();
 }
 
@@ -2018,28 +2020,44 @@ function selectPlayCharacter(charKey, rarity, mode) {
   // mode: '1v1', '2v2', 'vs_computer'
   currentGameMode = mode || '1v1';
   const is2v2 = currentGameMode === '2v2';
-  
+
   playerCharacter = createCharacterWithRarity(charKey, rarity);
-  const allKeys = Object.keys(CHARACTERS).filter(k => k !== charKey);
-  
+  const allKeys = Object.keys(CHARACTERS);
+
+  // Helper: pick a random opponent key, avoiding recent repeats
+  function pickOpponentKey(excludeKeys = []) {
+    const excludeSet = new Set([...excludeKeys, ...lastOpponentKeys]);
+    let pool = allKeys.filter(k => !excludeSet.has(k));
+    // If all non-recent opponents are excluded, allow any except direct exclusions
+    if (pool.length === 0) pool = allKeys.filter(k => !excludeKeys.includes(k));
+    // Fallback: allow anything
+    if (pool.length === 0) pool = allKeys;
+    const key = pool[Math.floor(Math.random() * pool.length)];
+    return key;
+  }
+
   if (is2v2) {
     // 2v2: create teammate + 2 opponents
-    const teammateKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+    const teammateKey = pickOpponentKey([charKey]);
     teammateCharacter = createCharacterWithRarity(teammateKey, rollRarity());
-    const remainingKeys = allKeys.filter(k => k !== teammateKey);
-    const opp1Key = remainingKeys[Math.floor(Math.random() * remainingKeys.length)];
+    const opp1Key = pickOpponentKey([charKey, teammateKey]);
     opponent1Character = createCharacterWithRarity(opp1Key, rollRarity());
-    const remainingKeys2 = remainingKeys.filter(k => k !== opp1Key);
-    const opp2Key = remainingKeys2[Math.floor(Math.random() * remainingKeys2.length)];
+    const opp2Key = pickOpponentKey([charKey, teammateKey, opp1Key]);
     opponent2Character = createCharacterWithRarity(opp2Key, rollRarity());
+    // Track opponents for future variety
+    lastOpponentKeys.push(opp1Key, opp2Key);
+    if (lastOpponentKeys.length > 4) lastOpponentKeys = lastOpponentKeys.slice(-4);
   } else {
-    // 1v1: single opponent
-    const aiKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+    // 1v1: single opponent (allow mirror matches for variety)
+    const aiKey = pickOpponentKey([]);
     const aiRarity = rollRarity();
     aiCharacter = createCharacterWithRarity(aiKey, aiRarity);
     teammateCharacter = null;
     opponent1Character = null;
     opponent2Character = null;
+    // Track opponent for future variety
+    lastOpponentKeys.push(aiKey);
+    if (lastOpponentKeys.length > 3) lastOpponentKeys = lastOpponentKeys.slice(-3);
   }
 
   hideAllScreens();
@@ -2805,9 +2823,14 @@ function endGame(text, isWin) {
   if (isWin) {
     const rollReward = selectedDifficulty === 'easy' ? 0 : selectedDifficulty === 'medium' ? 1 : 2;
     const yenReward = selectedDifficulty === 'easy' ? 100 : selectedDifficulty === 'medium' ? 300 : 500;
-    const spinText = rollReward > 0 ? '+' + rollReward + ' Spin' + (rollReward > 1 ? 's' : '') : 'No bonus on Easy!';
+    const cleanSheet = scores.red === 0;
+    const totalSpins = rollReward + (cleanSheet ? 1 : 0);
+    let spinText = '';
+    if (rollReward > 0) spinText += '+' + rollReward + ' Spin' + (rollReward > 1 ? 's' : '');
+    if (cleanSheet) spinText += (spinText ? ' | ' : '') + '+1 Spin (Clean Sheet!)';
+    if (!spinText) spinText = 'No bonus on Easy!';
     bonusEl.innerHTML = spinText + '<br><span style="color:#ffd700;font-size:16px;">+' + yenReward + ' Yen</span>';
-    handleWin(rollReward);
+    handleWin(totalSpins);
   } else {
     bonusEl.textContent = '';
     handleLoss();
