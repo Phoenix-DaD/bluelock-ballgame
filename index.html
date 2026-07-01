@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="1.0.1">
+<meta name="app-version" content="1.0.2">
 <title>BLUE LOCK — Ego Striker</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
@@ -1553,6 +1553,16 @@ const RARITY_POOLS = {
 function getRarityMultiplier(rarity) { return RARITY[rarity]?.mult || 1.0; }
 function getRarityColor(rarity) { return RARITY[rarity]?.color || '#9E9E9E'; }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+
 function rollRarity() {
   const r = Math.random() * 100;
   if (r < 1) return 'Mythic';
@@ -1639,94 +1649,46 @@ async function loadPlayerData() {
   if (!currentUser) return;
   console.log('loadPlayerData() starting for user:', currentUser.id);
 
+  const { data: stats, error: sErr } = await supabaseClient.rpc('ensure_player_data');
+  if (sErr) { console.error('Ensure stats error:', sErr); }
+  else { playerData.stats = stats; }
+
   // Load characters
   const { data: chars, error: cErr } = await supabaseClient.from('player_characters').select('*').eq('user_id', currentUser.id);
   if (cErr) { console.error('Load characters error:', cErr); }
   else { console.log('Loaded characters:', chars); playerData.characters = chars || []; }
-
-  // Load stats
-  const { data: stats, error: sErr } = await supabaseClient.from('player_stats').select('*').eq('user_id', currentUser.id).single();
-  if (sErr && sErr.code !== 'PGRST116') { console.error(sErr); }
-
-  if (!stats) {
-    const today = new Date().toISOString().split('T')[0];
-    const { data: newStats } = await supabaseClient.from('player_stats').insert({
-      user_id: currentUser.id, daily_rolls: 5, bonus_rolls: 0, last_roll_reset: today
-    }).select();
-    playerData.stats = newStats ? newStats[0] : { daily_rolls: 5, bonus_rolls: 0, wins: 0, losses: 0, total_games: 0, last_roll_reset: today };
-  } else {
-    const today = new Date().toISOString().split('T')[0];
-    if (stats.last_roll_reset !== today) {
-      await supabaseClient.from('player_stats').update({ daily_rolls: 5, last_roll_reset: today }).eq('user_id', currentUser.id);
-      stats.daily_rolls = 5; stats.last_roll_reset = today;
-    }
-    playerData.stats = stats;
-  }
   console.log('loadPlayerData() done. chars:', playerData.characters.length, 'stats:', playerData.stats);
-}
-
-async function saveRolledCharacter(charKey, rarity) {
-  if (!currentUser) return null;
-  const { data, error } = await supabaseClient.from('player_characters').insert({
-    user_id: currentUser.id, character_key: charKey, rarity
-  }).select();
-  if (error) { console.error('Save character error:', error); return null; }
-  return data ? data[0] : null;
-}
-
-
-
-async function deleteOldCharacter() {
-  if (!currentUser) return;
-  await supabaseClient.from('player_characters').delete().eq('user_id', currentUser.id);
-}
-async function updateCharacterRarity(id, rarity) {
-  if (!currentUser) return;
-  await supabaseClient.from('player_characters').update({ rarity }).eq('id', id);
-}
-
-async function updateStats(updates) {
-  if (!currentUser || !playerData.stats) return;
-  await supabaseClient.from('player_stats').update(updates).eq('user_id', currentUser.id);
 }
 
 async function handleWin(rollReward) {
   if (!currentUser || !playerData.stats) return;
-  const wins = (playerData.stats.wins || 0) + 1;
-  const bonus = (playerData.stats.bonus_rolls || 0) + rollReward;
-  const total = (playerData.stats.total_games || 0) + 1;
+  const cleanSheet = scores.red === 0;
   const yenReward = selectedDifficulty === 'easy' ? 100 : selectedDifficulty === 'medium' ? 300 : 500;
-  const newYen = (playerData.stats.yen || 0) + yenReward;
-  await updateStats({ wins, bonus_rolls: bonus, total_games: total, yen: newYen });
-  playerData.stats.wins = wins; playerData.stats.bonus_rolls = bonus; playerData.stats.total_games = total; playerData.stats.yen = newYen;
+  const { data, error } = await supabaseClient.rpc('record_vs_result', {
+    p_result: 'win',
+    p_difficulty: selectedDifficulty,
+    p_clean_sheet: cleanSheet
+  });
+  if (error) { console.error('Record win error:', error); return yenReward; }
+  playerData.stats = data;
   return yenReward;
 }
 
 async function handleLoss() {
   if (!currentUser || !playerData.stats) return;
-  const losses = (playerData.stats.losses || 0) + 1;
-  const total = (playerData.stats.total_games || 0) + 1;
-  await updateStats({ losses, total_games: total });
-  playerData.stats.losses = losses; playerData.stats.total_games = total;
+  const { data, error } = await supabaseClient.rpc('record_vs_result', {
+    p_result: 'loss',
+    p_difficulty: selectedDifficulty,
+    p_clean_sheet: false
+  });
+  if (error) { console.error('Record loss error:', error); return; }
+  playerData.stats = data;
 }
 
 // ─── UI Navigation ──────────────────────────────────────────────
 function showLoginPage() {
   hideAllScreens(); gameState = 'login';
   document.getElementById('loginPage').classList.remove('hidden');
-  checkPendingReload();
-}
-
-function showMainMenu() {
-  hideAllScreens(); gameState = 'menu';
-  document.getElementById('mainMenu').classList.remove('hidden');
-  const name = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Striker';
-  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + name;
-  if (playerData.stats) {
-    document.getElementById('menuWins').textContent = formatNumber(playerData.stats.wins || 0);
-    const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
-    document.getElementById('menuRolls').textContent = formatNumber(totalRolls);
-  }
   checkPendingReload();
 }
 
@@ -1939,7 +1901,10 @@ async function sendFriendRequest() {
   const name = input.value.trim();
   if (!name) return;
   // Find user by display_name
-  const { data: profiles } = await supabaseClient.from('player_stats').select('user_id, display_name').eq('display_name', name).neq('user_id', currentUser.id).single();
+  const { data: profiles, error: lookupErr } = await supabaseClient
+    .rpc('find_player_by_display_name', { p_display_name: name })
+    .single();
+  if (lookupErr && lookupErr.code !== 'PGRST116') console.error('Friend lookup error:', lookupErr);
   if (!profiles) { alert('User not found with that display name.'); return; }
   const { error } = await supabaseClient.from('friends').insert({ user_id: currentUser.id, friend_id: profiles.user_id, status: 'pending' });
   if (error) { console.error(error); alert('Failed to send friend request.'); return; }
@@ -1992,7 +1957,9 @@ function updatePartyWidget() {
   `;
   
   members.forEach((m, i) => {
-    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(event, ${i})" title="${m.display_name || 'Player'}${inMatch ? ' (Match in progress)' : ''}">${(m.display_name || 'P').charAt(0)}</div>`;
+    const memberName = escapeHtml(m.display_name || 'Player');
+    const memberInitial = escapeHtml((m.display_name || 'P').charAt(0));
+    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(event, ${i})" title="${memberName}${inMatch ? ' (Match in progress)' : ''}">${memberInitial}</div>`;
   });
   
   if (!inMatch && members.length < 3) {
@@ -2019,7 +1986,7 @@ function renderPartyMembers() {
     <div class="party-member-card">
       <div class="party-member-avatar"><img src="" alt=""></div>
       <div class="party-member-info">
-        <div class="name">${m.display_name || 'Player'}</div>
+        <div class="name">${escapeHtml(m.display_name || 'Player')}</div>
         <div class="role">Member</div>
       </div>
       ${isLeader && !inMatch ? `<button class="party-member-remove" onclick="kickPartyMember(${i})">KICK</button>` : ''}
@@ -2308,32 +2275,20 @@ async function rollCharacter() {
   const totalRolls = (playerData.stats.daily_rolls || 0) + (playerData.stats.bonus_rolls || 0);
   if (totalRolls <= 0) { alert('No rolls remaining! Come back tomorrow for 5 daily rolls.'); return; }
 
-  const rarity = rollRarity();
-  const pool = RARITY_POOLS[rarity];
-  let charKey, data, message;
-  
-  if (pool.length === 0) {
-    charKey = null;
-    message = 'No characters in ' + rarity + ' yet!';
-  } else {
-    charKey = pool[Math.floor(Math.random() * pool.length)];
-    data = CHARACTERS[charKey];
-    if (playerData.characters.length > 0) {
-      await deleteOldCharacter();
-      playerData.characters = [];
-    }
-    const newChar = await saveRolledCharacter(charKey, rarity);
-    if (newChar) { playerData.characters = [newChar]; message = 'You rolled ' + data.name + '!'; }
-    else { message = 'Roll failed! Check console for errors.'; console.error('Failed to save:', charKey, rarity); }
+  const { data: rollResult, error } = await supabaseClient.rpc('roll_egoist');
+  if (error || !rollResult?.character) {
+    console.error('Roll failed:', error);
+    alert(error?.message || 'Roll failed. Please try again.');
+    return;
   }
 
-  if (playerData.stats.daily_rolls > 0) {
-    playerData.stats.daily_rolls--;
-    await updateStats({ daily_rolls: playerData.stats.daily_rolls });
-  } else {
-    playerData.stats.bonus_rolls--;
-    await updateStats({ bonus_rolls: playerData.stats.bonus_rolls });
-  }
+  const newChar = rollResult.character;
+  const rarity = newChar.rarity;
+  const charKey = newChar.character_key;
+  const data = CHARACTERS[charKey];
+  const message = data ? 'You rolled ' + data.name + '!' : 'You rolled a new Egoist!';
+  playerData.characters = [newChar];
+  playerData.stats = rollResult.stats;
 
   await runEgoAwakening(rarity, charKey, data, message);
 
