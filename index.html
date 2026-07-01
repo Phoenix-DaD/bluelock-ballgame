@@ -3639,33 +3639,22 @@ class Ball {
   startTrail(colors, timer = 50, size = 10) {
     this.trail = { colors, timer, maxTimer: timer, size };
   }
-  chooseCurveBendSide(player, target, px, py, bendDistance) {
+  chooseCurveBendSide(player, target, px, py) {
     const sx = player.x, sy = player.y;
-    const dx = target.x - sx, dy = target.y - sy;
-    const blockers = players.filter(p => p !== player && p.team !== player.team);
-    const scoreSide = (side) => {
-      let danger = 0;
-      const ctrlX = sx + dx * 0.42 + px * bendDistance * side;
-      const ctrlY = sy + dy * 0.42 + py * bendDistance * side;
-      const fieldSpace = Math.min(ctrlX, WIDTH - ctrlX, ctrlY, HEIGHT - ctrlY);
-      for (const blocker of blockers) {
-        const line = pointLineDistance(blocker.x, blocker.y, sx, sy, target.x, target.y);
-        if (line.t <= 0.05 || line.t >= 0.95 || line.distance > blocker.radius + 110) continue;
-        const lateral = (blocker.x - sx) * px + (blocker.y - sy) * py;
-        const blockerSide = lateral >= 0 ? 1 : -1;
-        const distanceWeight = 1 - clamp(line.distance / 140, 0, 1);
-        const middleWeight = 1 - Math.abs(line.t - 0.5);
-        danger += (side === blockerSide ? 2.4 : 0.15) * distanceWeight * middleWeight;
-      }
-      return danger - fieldSpace * 0.003;
-    };
-    const plusScore = scoreSide(1);
-    const minusScore = scoreSide(-1);
-    if (Math.abs(plusScore - minusScore) < 0.08) {
-      const midY = sy + dy * 0.42;
-      return midY < HEIGHT / 2 ? 1 : -1;
+    const opponents = players.filter(p => p !== player && p.team !== player.team);
+    let closest = null;
+    let closestScore = Infinity;
+    for (const opponent of opponents) {
+      const line = pointLineDistance(opponent.x, opponent.y, sx, sy, target.x, target.y);
+      const inShotLane = line.t > 0.05 && line.t < 0.95 && line.distance <= opponent.radius + 135;
+      const distanceToPlayer = dist(sx, sy, opponent.x, opponent.y);
+      const score = inShotLane ? distanceToPlayer : distanceToPlayer + 10000;
+      if (score < closestScore) { closest = opponent; closestScore = score; }
     }
-    return plusScore < minusScore ? 1 : -1;
+    if (!closest) return sy < HEIGHT / 2 ? 1 : -1;
+    const desiredVerticalBend = sy > closest.y ? 1 : -1;
+    if (Math.abs(py) < 0.12) return desiredVerticalBend;
+    return desiredVerticalBend * Math.sign(py);
   }
   startCurveShot(player, target, colors) {
     const sx = player.x, sy = player.y;
@@ -3674,7 +3663,7 @@ class Ball {
     const nx = dx / mag, ny = dy / mag;
     const px = -ny, py = nx;
     const bendDistance = clamp(mag * 0.52, 115, 260);
-    const side = this.chooseCurveBendSide(player, target, px, py, bendDistance);
+    const side = this.chooseCurveBendSide(player, target, px, py);
     const bend = bendDistance * side;
     this.release(); player.hasBall = false;
     this.x = sx + nx * (player.radius + this.radius + 6);
