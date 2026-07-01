@@ -1433,10 +1433,10 @@ canvas {
 #controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 11px; text-align: center; pointer-events: none; font-family: 'Roboto Condensed', sans-serif; display: none; }
 #abilityHud {
   position: absolute;
-  right: 14px;
+  right: -168px;
   top: 50%;
   transform: translateY(-50%);
-  width: 150px;
+  width: 144px;
   display: none;
   pointer-events: none;
   z-index: 18;
@@ -1446,7 +1446,7 @@ canvas {
 .ability-hud-card {
   position: relative;
   overflow: hidden;
-  padding: 12px;
+  padding: 11px;
   background:
     linear-gradient(135deg, rgba(0,212,255,0.12), rgba(255,255,255,0.035)),
     rgba(5,8,24,0.86);
@@ -1456,9 +1456,9 @@ canvas {
   box-shadow: 0 14px 36px rgba(0,0,0,0.42), 0 0 24px var(--ability-glow, rgba(0,212,255,0.18));
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
 }
-.ability-hud-top { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.ability-hud-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .ability-hud-icon {
-  width: 42px; height: 42px;
+  width: 40px; height: 40px;
   flex: 0 0 auto;
   border-radius: 50%;
   display: grid; place-items: center;
@@ -1483,14 +1483,14 @@ canvas {
 .ability-hud-key {
   color: rgba(255,255,255,0.55);
   font-family: 'Oswald', sans-serif;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 .ability-hud-name {
   color: #fff;
   font-family: 'Oswald', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.05;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -1530,6 +1530,18 @@ canvas {
 .ability-hud-message.show {
   opacity: 1;
   transform: translateY(0);
+}
+@media (max-width: 1260px) {
+  #abilityHud {
+    right: 12px;
+    top: 14px;
+    transform: none;
+    width: 132px;
+  }
+  .ability-hud-card { padding: 9px; }
+  .ability-hud-icon { width: 34px; height: 34px; font-size: 12px; }
+  .ability-hud-name { font-size: 11px; }
+  .ability-hud-status, .ability-hud-message { font-size: 10px; }
 }
 
 /* Goal & Winner Effects */
