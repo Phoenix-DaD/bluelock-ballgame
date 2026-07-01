@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="1.0.2">
+<meta name="app-version" content="1.0.3">
 <title>BLUE LOCK — Ego Striker</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
@@ -597,6 +597,9 @@ canvas {
 .nel-card:hover { transform: translateY(-5px) scale(1.02); border-color: #00d4ff; box-shadow: 0 15px 40px rgba(0,100,255,0.2); }
 .nel-card:active { transform: translateY(-2px) scale(0.98); }
 .nel-card.full-width { flex: 0 0 100%; min-width: 100%; }
+.nel-card.coming-soon { opacity: 0.58; cursor: not-allowed; }
+.nel-card.coming-soon:hover { transform: none; border-color: rgba(255,255,255,0.1); box-shadow: none; }
+.nel-card.coming-soon .nel-card-name::after { content: 'SOON'; margin-left: 8px; padding: 2px 6px; border: 1px solid rgba(255,255,255,0.25); border-radius: 4px; font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.55); vertical-align: middle; }
 .nel-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(5,5,16,0.95) 0%, rgba(5,5,16,0.85) 10%, rgba(5,5,16,0.6) 25%, rgba(5,5,16,0.3) 45%, rgba(5,5,16,0.1) 65%, rgba(5,5,16,0) 100%); pointer-events: none; z-index: 1; }
 .nel-card .nel-card-img { display: none; }
 .nel-card .nel-card-content { padding: 12px 16px; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; position: relative; z-index: 2; background: none; }
@@ -1113,19 +1116,19 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">RANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" data-bg="ranked1v1" onclick="selectPlayMode('ranked_1v1')">
+      <div class="nel-card coming-soon" data-bg="ranked1v1" onclick="showModeComingSoon('Ranked 1v1')">
         <div class="nel-card-img" id="nelRanked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 RANKED</div>
-          <div class="nel-card-desc">Ranked 1v1</div>
+          <div class="nel-card-desc">Matchmaking in development</div>
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
-      <div class="nel-card" data-bg="ranked2v2" onclick="selectPlayMode('ranked_2v2')">
+      <div class="nel-card coming-soon" data-bg="ranked2v2" onclick="showModeComingSoon('Ranked 2v2')">
         <div class="nel-card-img" id="nelRanked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 RANKED</div>
-          <div class="nel-card-desc">Ranked 2v2</div>
+          <div class="nel-card-desc">Matchmaking in development</div>
           <div class="nel-card-badge ranked">🏆</div>
         </div>
       </div>
@@ -1134,19 +1137,19 @@ Sign in with Google
   <div class="nel-section">
     <div class="nel-section-title">UNRANKED</div>
     <div class="nel-cards">
-      <div class="nel-card" data-bg="unranked1v1" onclick="selectPlayMode('unranked_1v1')">
+      <div class="nel-card coming-soon" data-bg="unranked1v1" onclick="showModeComingSoon('Unranked 1v1')">
         <div class="nel-card-img" id="nelUnranked1v1Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">1V1 UNRANKED</div>
-          <div class="nel-card-desc">Casual 1v1</div>
+          <div class="nel-card-desc">Matchmaking in development</div>
           <div class="nel-card-badge">🎮</div>
         </div>
       </div>
-      <div class="nel-card" data-bg="unranked2v2" onclick="selectPlayMode('unranked_2v2')">
+      <div class="nel-card coming-soon" data-bg="unranked2v2" onclick="showModeComingSoon('Unranked 2v2')">
         <div class="nel-card-img" id="nelUnranked2v2Img"></div>
         <div class="nel-card-content">
           <div class="nel-card-name">2V2 UNRANKED</div>
-          <div class="nel-card-desc">Casual 2v2</div>
+          <div class="nel-card-desc">Matchmaking in development</div>
           <div class="nel-card-badge">🎮</div>
         </div>
       </div>
@@ -1756,6 +1759,10 @@ function showNelPlayMenu() {
 
 let selectedPlayMode = null;
 
+function showModeComingSoon(modeName) {
+  alert(modeName + ' matchmaking is still in development. VS Computer and Training are playable now.');
+}
+
 function selectPlayMode(mode) {
   selectedPlayMode = mode;
   const char = playerData.characters[0];
@@ -1930,9 +1937,12 @@ let currentParty = null;
 
 async function loadParty() {
   if (!currentUser) return;
-  const { data: party } = await supabaseClient.from('parties').select('*').or('leader_id.eq.' + currentUser.id + ',members.cs.{' + currentUser.id + '}').eq('status', 'open').order('created_at', { ascending: false }).limit(1).single();
-  if (party) {
-    currentParty = party;
+  const { data, error } = await supabaseClient.rpc('get_open_party');
+  if (error) console.error('Load party error:', error);
+
+  if (data?.party) {
+    currentParty = data.party;
+    currentParty.members = data.members || [];
     updatePartyWidget();
   } else {
     currentParty = null;
@@ -2049,11 +2059,26 @@ async function promotePartyMember() {
   const member = members[selectedPartyMemberIndex];
   if (!member) return;
   // Swap leader
-  const newLeader = { user_id: member.user_id, display_name: member.display_name };
-  members[selectedPartyMemberIndex] = { user_id: currentUser.id, display_name: 'You' };
+  const { error: removeErr } = await supabaseClient
+    .from('party_members')
+    .delete()
+    .eq('party_id', currentParty.id)
+    .eq('user_id', member.user_id);
+  if (removeErr) { console.error('Promote remove error:', removeErr); alert('Failed to promote party member.'); return; }
+
+  const { error: addErr } = await supabaseClient
+    .from('party_members')
+    .insert({ party_id: currentParty.id, user_id: currentUser.id, display_name: 'You' });
+  if (addErr) { console.error('Promote add error:', addErr); alert('Failed to promote party member.'); return; }
+
+  const { error: partyErr } = await supabaseClient
+    .from('parties')
+    .update({ leader_id: member.user_id })
+    .eq('id', currentParty.id);
+  if (partyErr) { console.error('Promote update error:', partyErr); alert('Failed to promote party member.'); return; }
+
   currentParty.leader_id = member.user_id;
-  currentParty.members = members;
-  await supabaseClient.from('parties').update({ leader_id: member.user_id, members }).eq('id', currentParty.id);
+  currentParty.members = members.filter((_, i) => i !== selectedPartyMemberIndex).concat({ user_id: currentUser.id, display_name: 'You' });
   closePartyFriendPopup();
   updatePartyWidget();
   renderPartyMembers();
@@ -2070,9 +2095,15 @@ async function kickPartyMember(index) {
   if (inMatch) { alert('Cannot kick during a match.'); return; }
   if (!currentParty || currentParty.leader_id !== currentUser.id) return;
   const members = currentParty.members || [];
-  members.splice(index, 1);
-  await supabaseClient.from('parties').update({ members }).eq('id', currentParty.id);
-  currentParty.members = members;
+  const member = members[index];
+  if (!member) return;
+  const { error } = await supabaseClient
+    .from('party_members')
+    .delete()
+    .eq('party_id', currentParty.id)
+    .eq('user_id', member.user_id);
+  if (error) { console.error('Kick party member error:', error); alert('Failed to kick party member.'); return; }
+  currentParty.members = members.filter((_, i) => i !== index);
   updatePartyWidget();
   renderPartyMembers();
 }
@@ -2144,10 +2175,14 @@ async function inviteToParty(friendId) {
     }).select();
     if (!newParty) { alert('Failed to create party.'); return; }
     currentParty = newParty[0];
+    currentParty.members = [];
   }
   const members = currentParty.members || [];
+  const { error } = await supabaseClient
+    .from('party_members')
+    .insert({ party_id: currentParty.id, user_id: friendId, display_name: friendId });
+  if (error) { console.error('Invite party member error:', error); alert('Failed to invite party member.'); return; }
   members.push({ user_id: friendId, display_name: friendId });
-  await supabaseClient.from('parties').update({ members }).eq('id', currentParty.id);
   currentParty.members = members;
   updatePartyWidget();
   renderPartyMembers();
