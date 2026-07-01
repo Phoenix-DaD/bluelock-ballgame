@@ -295,8 +295,8 @@ canvas {
     linear-gradient(135deg, rgba(0, 212, 255, 0.16), transparent 28%),
     linear-gradient(315deg, rgba(255, 215, 0, 0.08), transparent 30%),
     rgba(5, 8, 24, 0.96);
-  border: 1px solid rgba(0, 212, 255, 0.24);
-  border-left: 4px solid #00d4ff;
+  border: 1px solid transparent;
+  border-left: 4px solid transparent;
   border-radius: 8px;
   padding: 16px;
   z-index: 40;
@@ -305,7 +305,7 @@ canvas {
   gap: 14px;
   backdrop-filter: blur(14px);
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
-  box-shadow: 0 16px 44px rgba(0,0,0,0.58), 0 0 34px rgba(0, 120, 255, 0.18);
+  box-shadow: none;
   overflow: hidden;
   transform-origin: left center;
 }
@@ -328,10 +328,16 @@ canvas {
   background: linear-gradient(90deg, transparent, #ffd700);
   box-shadow: 0 0 18px rgba(255,215,0,0.5);
   pointer-events: none;
+  opacity: 0;
 }
 .party-widget.active {
   display: flex;
-  animation: partyWidgetOpen 2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation:
+    partyWidgetOpen 2s cubic-bezier(0.16, 1, 0.3, 1) both,
+    partyWidgetFrameReveal 2s ease-out both;
+}
+.party-widget.active::after {
+  animation: partyWidgetAccentReveal 2s ease-out both;
 }
 .party-widget.active .party-open-lines {
   animation: partyLinesFade 2s ease-out both;
@@ -422,6 +428,28 @@ canvas {
   18% { opacity: 1; transform: translateX(-18px); filter: blur(4px); }
   58% { opacity: 1; transform: translateX(-6px); filter: blur(2px); }
   100% { opacity: 1; transform: translateX(0); filter: blur(0); }
+}
+@keyframes partyWidgetFrameReveal {
+  0%, 49% {
+    border-color: transparent;
+    border-left-color: transparent;
+    box-shadow: none;
+  }
+  58% {
+    border-color: rgba(0, 212, 255, 0.2);
+    border-left-color: rgba(0, 212, 255, 0.82);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.38), 0 0 22px rgba(0, 120, 255, 0.1);
+  }
+  100% {
+    border-color: rgba(0, 212, 255, 0.24);
+    border-left-color: #00d4ff;
+    box-shadow: 0 16px 44px rgba(0,0,0,0.58), 0 0 34px rgba(0, 120, 255, 0.18);
+  }
+}
+@keyframes partyWidgetAccentReveal {
+  0%, 49% { opacity: 0; }
+  58% { opacity: 0.72; }
+  100% { opacity: 1; }
 }
 @keyframes partyLineTop {
   0% { transform: translateY(-4px) scaleX(0.02); opacity: 0; }
