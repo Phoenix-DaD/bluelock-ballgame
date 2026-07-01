@@ -1012,11 +1012,12 @@ canvas {
 .character-grid {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: stretch;
   width: 100%;
-  max-width: 860px;
+  max-width: 960px;
   min-height: 280px;
-  gap: 10px;
+  gap: 18px;
   padding: 0 10px;
   position: relative;
 }
@@ -1075,6 +1076,7 @@ canvas {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  order: 2;
 }
 .owned-label {
   font-family: 'Oswald', sans-serif;
@@ -1157,6 +1159,97 @@ canvas {
   text-transform: uppercase;
   letter-spacing: 1px;
   z-index: 5;
+}
+
+.ability-display {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  order: 3;
+}
+.ability-card {
+  width: 160px;
+  min-height: 292px;
+  padding: 14px 12px;
+  background:
+    linear-gradient(145deg, rgba(0,212,255,0.12), rgba(255,255,255,0.035)),
+    rgba(5,8,24,0.86);
+  border: 2px solid rgba(0,212,255,0.22);
+  border-radius: 16px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+.ability-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  transform: translateX(-100%);
+  animation: abilityCardScan 3.6s ease-in-out infinite;
+}
+@keyframes abilityCardScan {
+  0%, 55% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.ability-card .ability-icon {
+  position: relative;
+  width: 54px; height: 54px;
+  margin: 2px auto 10px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  color: #08101f;
+  font-family: 'Oswald', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: var(--ability-color, #00d4ff);
+  box-shadow: 0 0 24px var(--ability-glow, rgba(0,212,255,0.45));
+}
+.ability-card .ability-name {
+  position: relative;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+.ability-card .ability-desc {
+  position: relative;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.66);
+  min-height: 82px;
+}
+.ability-card .ability-meta {
+  position: relative;
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+}
+.ability-card .ability-chip {
+  padding: 5px 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  background: rgba(0,0,0,0.18);
+}
+.rarity-sidebar { order: 1; }
+
+@media (max-width: 760px) {
+  .character-grid { flex-direction: column; align-items: center; max-height: calc(100vh - 190px); overflow-y: auto; }
+  .rarity-sidebar, .owned-display, .ability-display { width: min(320px, calc(100vw - 36px)); }
 }
 
 .collection-card {
@@ -1338,6 +1431,106 @@ canvas {
 #score { font-size: 40px; font-weight: 700; margin-bottom: 5px; letter-spacing: 4px; }
 #info { font-size: 13px; opacity: 0.9; font-family: 'Roboto Condensed', sans-serif; }
 #controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 11px; text-align: center; pointer-events: none; font-family: 'Roboto Condensed', sans-serif; display: none; }
+#abilityHud {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 150px;
+  display: none;
+  pointer-events: none;
+  z-index: 18;
+  color: white;
+  font-family: 'Roboto Condensed', sans-serif;
+}
+.ability-hud-card {
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+  background:
+    linear-gradient(135deg, rgba(0,212,255,0.12), rgba(255,255,255,0.035)),
+    rgba(5,8,24,0.86);
+  border: 1px solid rgba(0,212,255,0.24);
+  border-left: 3px solid var(--ability-color, #00d4ff);
+  border-radius: 8px;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.42), 0 0 24px var(--ability-glow, rgba(0,212,255,0.18));
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+.ability-hud-top { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.ability-hud-icon {
+  width: 42px; height: 42px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: conic-gradient(var(--ability-color, #00d4ff) var(--cooldown-deg, 360deg), rgba(255,255,255,0.12) 0deg);
+  color: #06111f;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 0 0 18px var(--ability-glow, rgba(0,212,255,0.42));
+  position: relative;
+}
+.ability-hud-icon::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.84);
+  z-index: -1;
+}
+.ability-hud-label { min-width: 0; }
+.ability-hud-key {
+  color: rgba(255,255,255,0.55);
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.ability-hud-name {
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  line-height: 1.05;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.ability-hud-bar {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.11);
+  margin-bottom: 7px;
+}
+.ability-hud-fill {
+  height: 100%;
+  width: var(--cooldown-percent, 100%);
+  background: linear-gradient(90deg, var(--ability-color, #00d4ff), #fff);
+  box-shadow: 0 0 12px var(--ability-glow, rgba(0,212,255,0.5));
+  transition: width 0.12s linear;
+}
+.ability-hud-status {
+  min-height: 14px;
+  color: rgba(255,255,255,0.65);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.ability-hud-message {
+  margin-top: 8px;
+  min-height: 16px;
+  color: #ffd700;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.ability-hud-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* Goal & Winner Effects */
 #goalFlash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 15; display: none; background: radial-gradient(circle at center, rgba(255,200,0,0.3) 0%, transparent 60%); }
@@ -1428,8 +1621,22 @@ canvas {
 <div id="gameContainer">
 <div class="game-area">
 <canvas id="gameCanvas"></canvas>
-<div id="ui"><div id="score">0 - 0</div><div id="info">WASD to move · Left click: Direct Shot · Right click: Steal/Dash</div></div>
+<div id="ui"><div id="score">0 - 0</div><div id="info">WASD to move · Left click: Shoot · Right click: Steal/Dash · Q: Ability</div></div>
 <div id="controls">BLUE LOCK — First to 5 goals wins</div>
+<div id="abilityHud">
+  <div class="ability-hud-card" id="abilityHudCard">
+    <div class="ability-hud-top">
+      <div class="ability-hud-icon" id="abilityHudIcon">Q</div>
+      <div class="ability-hud-label">
+        <div class="ability-hud-key">Press Q</div>
+        <div class="ability-hud-name" id="abilityHudName">Ability</div>
+      </div>
+    </div>
+    <div class="ability-hud-bar"><div class="ability-hud-fill" id="abilityHudFill"></div></div>
+    <div class="ability-hud-status" id="abilityHudStatus">Ready</div>
+    <div class="ability-hud-message" id="abilityHudMessage"></div>
+  </div>
+</div>
 <div id="goalFlash"></div>
 <div id="goalText">GOAL!</div>
 <div id="winner">
@@ -1915,7 +2122,7 @@ let scores = { blue: 0, red: 0 };
 let currentGameMode = '1v1';
 const IDLE_TIMEOUT = 10000;
 const keys = {};
-const mouse = { x: 450, y: 275 };
+const mouse = { x: 450, y: 275, rawX: 450, rawY: 275 };
 
 // ─── Rarity System ──────────────────────────────────────────────
 const RARITY = {
@@ -2647,6 +2854,30 @@ function showMainMenu() {
 }
 
 // ─── Collection Grid ──────────────────────────────────────────────
+function buildAbilityDisplay(charKey) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ability-display';
+  if (!charKey || !ABILITY_DEFS[charKey]) {
+    wrapper.innerHTML = '<div class="owned-label">Ability</div><div class="ability-card"><div class="ability-icon">Q</div><div class="ability-name">Locked</div><div class="ability-desc">Roll an Egoist to unlock their special move.</div><div class="ability-meta"><div class="ability-chip">Key: Q</div></div></div>';
+    return wrapper;
+  }
+  const ability = ABILITY_DEFS[charKey];
+  wrapper.innerHTML = `
+    <div class="owned-label">Ability</div>
+    <div class="ability-card" style="--ability-color:${ability.color};--ability-glow:${ability.glow};">
+      <div class="ability-icon">${ability.icon}</div>
+      <div class="ability-name">${ability.name}</div>
+      <div class="ability-desc">${ability.description}</div>
+      <div class="ability-meta">
+        <div class="ability-chip">Key: Q</div>
+        <div class="ability-chip">${ability.cooldown}s Cooldown</div>
+        <div class="ability-chip">${ability.useText}</div>
+      </div>
+    </div>
+  `;
+  return wrapper;
+}
+
 function buildCollectionGrid() {
   const grid = document.getElementById('collectionGrid');
   grid.innerHTML = '';
@@ -2671,10 +2902,12 @@ function buildCollectionGrid() {
   const display = document.createElement('div');
   display.className = 'owned-display';
   
+  let ownedCharKey = null;
   if (playerData.characters.length === 0) {
     display.innerHTML = '<div class="owned-empty">No character yet.<br>Press ROLL to get your first Egoist!</div>';
   } else {
     const char = playerData.characters[0];
+    ownedCharKey = char.character_key;
     const data = CHARACTERS[char.character_key];
     if (data) {
       const statsHtml = Object.entries(data.stats).map(([s, v]) => {
@@ -2686,6 +2919,7 @@ function buildCollectionGrid() {
     }
   }
   grid.appendChild(display);
+  grid.appendChild(buildAbilityDisplay(ownedCharKey));
 }
 
 function buildPlaySelectGrid() {
@@ -3092,6 +3326,7 @@ function selectPlayCharacter(charKey, rarity, mode) {
     document.body.style.cursor = 'crosshair';
     gameOver = false;
     scores = { blue: 0, red: 0 };
+    resetAbilityPresentation();
     updateScore();
     ball.reset(false);
     if (is2v2) {
@@ -3155,6 +3390,74 @@ const CHARACTERS = {
   chigiri: { name: 'Chigiri', desc: 'Speed demon. Outruns everyone on the pitch.', behavior: 'forward', color: '#FF4500', assignedRarity: 'Rare', imgKey: 'chigiri', stats: { speed: 95, tackle: 40, dribble: 75, shoot: 65, shield: 55 }, modifiers: { maxSpeed: 7.5, dribbleSpeed: 4.8, shootPower: 13, dashCooldown: 140, dribbleCooldown: 220, dribbleDuration: 90 } }
 };
 
+const ABILITY_DEFS = {
+  isagi: {
+    name: 'Direct Shot',
+    icon: 'DS',
+    cooldown: 7,
+    color: '#00ff66',
+    glow: 'rgba(0,255,102,0.45)',
+    description: 'A fierce aim shot that blasts the ball forward with a green trail.',
+    useText: 'Requires ball + aim'
+  },
+  chigiri: {
+    name: 'Explosive Speed',
+    icon: 'EX',
+    cooldown: 10,
+    color: '#ff3b6b',
+    glow: 'rgba(255,59,107,0.45)',
+    description: 'Boosts speed by 50% for 4 seconds and leaves sprint streaks.',
+    useText: 'No aim needed'
+  },
+  bachira: {
+    name: 'Monster Dribble',
+    icon: 'MD',
+    cooldown: 8,
+    color: '#8cff3f',
+    glow: 'rgba(140,255,63,0.45)',
+    description: 'A quick wavelength dash that keeps the ball glued to Bachira.',
+    useText: 'Requires ball + aim'
+  },
+  rin: {
+    name: 'Curved Shot',
+    icon: 'CS',
+    cooldown: 10,
+    color: '#55d7ff',
+    glow: 'rgba(85,215,255,0.48)',
+    description: 'A cold water-trail shot that bends harder as it reaches its target.',
+    useText: 'Requires ball + aim'
+  },
+  nagi: {
+    name: 'World-class Touch',
+    icon: 'WT',
+    cooldown: 12,
+    color: '#d8f1ff',
+    glow: 'rgba(216,241,255,0.5)',
+    description: 'Instantly traps a nearby loose ball with perfect first touch.',
+    useText: 'Loose ball nearby'
+  },
+  barou: {
+    name: 'Predator Shot',
+    icon: 'PS',
+    cooldown: 7,
+    color: '#ff1744',
+    glow: 'rgba(255,23,68,0.5)',
+    description: 'Only fires on a clear goal lane. The shot is 25% stronger.',
+    useText: 'Clear goal lane'
+  }
+};
+
+const FPS = 60;
+const ABILITY_FAIL_THROTTLE = 28;
+const NAGI_TOUCH_RANGE = 150;
+let abilityFeedback = { text: '', timer: 0 };
+let predatorGoalGlow = { left: 0, right: 0 };
+
+function frames(seconds) { return Math.round(seconds * FPS); }
+function getCharacterKey(character) { return character?.imgKey || null; }
+function getAbilityDefForPlayer(player) { return ABILITY_DEFS[getCharacterKey(player?.character)] || null; }
+function getAbilityDefForKey(key) { return ABILITY_DEFS[key] || null; }
+
 // ─── Difficulty Config ───────────────────────────────────────
 const DIFFICULTY = {
   easy: { aiAccel: 0.10, aiPredict: 0.3, aiTackleRange: 10, aiTackleWindupMin: 40, aiTackleWindupMax: 65, aiDribbleDist: 45, aiReactMin: 25, aiReactMax: 50, aiDribbleMiss: 0.75, aiOvershootChance: 0.10, aiShootSpread: 160, aiShootPower: 4, aiSideStep: 0.08, aiChaseSpd: 0.18, aiDashChance: 0.005, aiPassChance: 0.12 },
@@ -3164,6 +3467,58 @@ const DIFFICULTY = {
 
 const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+
+function pointLineDistance(px, py, ax, ay, bx, by) {
+  const abx = bx - ax, aby = by - ay;
+  const lenSq = abx * abx + aby * aby || 1;
+  const t = clamp(((px - ax) * abx + (py - ay) * aby) / lenSq, 0, 1);
+  const x = ax + abx * t, y = ay + aby * t;
+  return { distance: dist(px, py, x, y), t, x, y };
+}
+
+function aimPointFromPlayer(player, rawX = mouse.rawX, rawY = mouse.rawY) {
+  if (!player) return { x: mouse.x, y: mouse.y };
+  if (rawX >= 0 && rawX <= WIDTH && rawY >= 0 && rawY <= HEIGHT) return { x: rawX, y: rawY };
+  const dx = rawX - player.x, dy = rawY - player.y;
+  if (Math.hypot(dx, dy) < 1) return { x: player.x + 1, y: player.y };
+  const candidates = [];
+  if (dx > 0) candidates.push((WIDTH - BALL_RADIUS - player.x) / dx);
+  if (dx < 0) candidates.push((BALL_RADIUS - player.x) / dx);
+  if (dy > 0) candidates.push((HEIGHT - BALL_RADIUS - player.y) / dy);
+  if (dy < 0) candidates.push((BALL_RADIUS - player.y) / dy);
+  const t = candidates.filter(v => v > 0).sort((a, b) => a - b)[0] || 1;
+  return {
+    x: clamp(player.x + dx * t, BALL_RADIUS, WIDTH - BALL_RADIUS),
+    y: clamp(player.y + dy * t, BALL_RADIUS, HEIGHT - BALL_RADIUS)
+  };
+}
+
+function opponentGoalPoint(player) {
+  return { x: player.team === 'blue' ? WIDTH : 0, y: HEIGHT / 2 };
+}
+
+function hasClearShotToGoal(player) {
+  if (!player) return false;
+  const goal = opponentGoalPoint(player);
+  const opponents = players.filter(p => p.team !== player.team);
+  for (const opp of opponents) {
+    const hit = pointLineDistance(opp.x, opp.y, player.x, player.y, goal.x, goal.y);
+    if (hit.t > 0.04 && hit.t < 0.96 && hit.distance < opp.radius + BALL_RADIUS + 18) return false;
+  }
+  return true;
+}
+
+function showAbilityMessage(text) {
+  if (!text) return;
+  abilityFeedback.text = text;
+  abilityFeedback.timer = 120;
+}
+
+function resetAbilityPresentation() {
+  abilityEffects = [];
+  abilityFeedback = { text: '', timer: 0 };
+  predatorGoalGlow = { left: 0, right: 0 };
+}
 
 // ─── Particle System ───────────────────────────────────────────────────
 let particles = [];
@@ -3185,11 +3540,129 @@ class Particle {
   }
 }
 
+let abilityEffects = [];
+function addAbilitySpark(x, y, colors, size = 8, life = 26) {
+  abilityEffects.push({
+    type: 'spark',
+    x,
+    y,
+    colors,
+    size,
+    life,
+    maxLife: life,
+    vx: (Math.random() - 0.5) * 1.8,
+    vy: (Math.random() - 0.5) * 1.8
+  });
+}
+function addAbilityLine(points, colors, width = 5, life = 26) {
+  abilityEffects.push({ type: 'line', points, colors, width, life, maxLife: life });
+}
+class AbilityEffect {
+  static updateAll() {
+    for (let i = abilityEffects.length - 1; i >= 0; i--) {
+      const e = abilityEffects[i];
+      e.life--;
+      if (e.type === 'spark') { e.x += e.vx; e.y += e.vy; e.vx *= 0.92; e.vy *= 0.92; }
+      if (e.life <= 0) abilityEffects.splice(i, 1);
+    }
+  }
+  static drawAll() {
+    for (const e of abilityEffects) {
+      const alpha = clamp(e.life / e.maxLife, 0, 1);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (e.type === 'spark') {
+        const grad = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.size);
+        grad.addColorStop(0, e.colors[0]);
+        grad.addColorStop(0.55, e.colors[1] || e.colors[0]);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (e.type === 'line' && e.points.length > 1) {
+        const grad = ctx.createLinearGradient(e.points[0].x, e.points[0].y, e.points[e.points.length - 1].x, e.points[e.points.length - 1].y);
+        grad.addColorStop(0, e.colors[0]);
+        grad.addColorStop(1, e.colors[1] || e.colors[0]);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = e.width * alpha;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowColor = e.colors[0];
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(e.points[0].x, e.points[0].y);
+        for (let i = 1; i < e.points.length; i++) ctx.lineTo(e.points[i].x, e.points[i].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+}
+
 // ─── Ball ────────────────────────────────────────────────────────────────────
 class Ball {
   constructor() { this.reset(false); }
-  reset(respawn = true) { this.x = WIDTH / 2; this.y = HEIGHT / 2; this.vx = 0; this.vy = 0; this.radius = BALL_RADIUS; this.carrier = null; this.rotation = 0; if (respawn) { kickoffCooldown = 90; if (currentGameMode === '2v2') { initPlayers2v2(); } else if (currentGameMode === 'training') { initPlayersTraining(); } else { initPlayers(); } } }
+  reset(respawn = true) {
+    this.x = WIDTH / 2; this.y = HEIGHT / 2; this.vx = 0; this.vy = 0; this.radius = BALL_RADIUS; this.carrier = null; this.rotation = 0;
+    this.trail = null; this.curve = null; this.untouchableTimer = 0;
+    if (respawn) { kickoffCooldown = 90; if (currentGameMode === '2v2') { initPlayers2v2(); } else if (currentGameMode === 'training') { initPlayersTraining(); } else { initPlayers(); } }
+  }
+  startTrail(colors, timer = 50, size = 10) {
+    this.trail = { colors, timer, maxTimer: timer, size };
+  }
+  startCurveShot(player, target, colors) {
+    const sx = player.x, sy = player.y;
+    const dx = target.x - sx, dy = target.y - sy;
+    const mag = Math.hypot(dx, dy) || 1;
+    const nx = dx / mag, ny = dy / mag;
+    const px = -ny, py = nx;
+    const side = player.team === 'blue' ? -1 : 1;
+    const bend = clamp(mag * 0.34, 70, 170) * side;
+    this.release(); player.hasBall = false;
+    this.x = sx + nx * (player.radius + this.radius + 6);
+    this.y = sy + ny * (player.radius + this.radius + 6);
+    this.vx = 0; this.vy = 0; this.carrier = null;
+    this.curve = {
+      startX: this.x,
+      startY: this.y,
+      targetX: target.x,
+      targetY: target.y,
+      ctrlX: sx + dx * 0.45 + px * bend,
+      ctrlY: sy + dy * 0.45 + py * bend,
+      timer: 0,
+      duration: clamp(Math.round(mag / 9), 34, 62),
+      colors,
+      lastX: this.x,
+      lastY: this.y
+    };
+    this.untouchableTimer = this.curve.duration + 4;
+    this.startTrail(colors, this.curve.duration + 12, 13);
+  }
   update() {
+    if (this.untouchableTimer > 0) this.untouchableTimer--;
+    if (this.curve) {
+      const c = this.curve;
+      c.timer++;
+      const raw = clamp(c.timer / c.duration, 0, 1);
+      const t = raw * raw * (0.55 + 0.45 * raw); // slow launch, sharper late bend
+      const inv = 1 - t;
+      const nextX = inv * inv * c.startX + 2 * inv * t * c.ctrlX + t * t * c.targetX;
+      const nextY = inv * inv * c.startY + 2 * inv * t * c.ctrlY + t * t * c.targetY;
+      this.vx = nextX - this.x; this.vy = nextY - this.y;
+      this.x = nextX; this.y = nextY;
+      this.rotation += Math.hypot(this.vx, this.vy) * 0.08;
+      addAbilitySpark(this.x, this.y, c.colors, 12, 20);
+      if (c.timer >= c.duration) {
+        const endVx = this.x - c.lastX, endVy = this.y - c.lastY, m = Math.hypot(endVx, endVy) || 1;
+        this.vx = (endVx / m) * 8;
+        this.vy = (endVy / m) * 8;
+        this.curve = null;
+      }
+      c.lastX = this.x; c.lastY = this.y;
+      this.checkGoal();
+      return;
+    }
     if (this.carrier) {
       const speed = Math.hypot(this.carrier.vx, this.carrier.vy);
       const dir = speed > 0.1 ? Math.atan2(this.carrier.vy, this.carrier.vx) : 0;
@@ -3207,6 +3680,11 @@ class Ball {
       if (this.x + this.radius > WIDTH) { this.x = WIDTH - this.radius; this.vx *= -0.7; }
       if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -0.7; }
       if (this.y + this.radius > HEIGHT) { this.y = HEIGHT - this.radius; this.vy *= -0.7; }
+    }
+    if (this.trail && this.trail.timer > 0) {
+      addAbilitySpark(this.x, this.y, this.trail.colors, this.trail.size, 24);
+      if (Math.random() < 0.5) addAbilitySpark(this.x - this.vx * 0.8, this.y - this.vy * 0.8, this.trail.colors, this.trail.size * 0.75, 20);
+      this.trail.timer--;
     }
     this.checkGoal();
   }
@@ -3259,14 +3737,25 @@ class Player {
     this.aiReactDelay = 0; this.aiTackleWindup = 0; this.aiDribbleWanted = false; this.aiPanic = 0;
     this.aiOvershoot = 0; this.aiLastOppDist = 999; this.aiTackleTarget = 0;
     this.aiRole = null; // '1v1' | 'teammate' | 'team2'
+    this.abilityCooldown = 0; this.abilityCooldownMax = 0; this.abilityFailTimer = 0;
+    this.speedBoostTimer = 0; this.monsterDashTimer = 0; this.monsterDashDuration = 0; this.monsterDashDir = null;
+    this.aiAbilityThink = 20 + Math.floor(Math.random() * 45);
   }
   get isDashing() { return this.dashTimer > 0; }
+  get isAbilityDashing() { return this.monsterDashTimer > 0; }
   get isDribbling() { return this.dribbleTimer > 0; }
   update() {
     if (this.dashCooldown > 0) this.dashCooldown--;
     if (this.dashTimer > 0) this.dashTimer--;
     if (this.dribbleCooldown > 0) this.dribbleCooldown--;
     if (this.dribbleTimer > 0) this.dribbleTimer--;
+    if (this.abilityCooldown > 0) this.abilityCooldown--;
+    if (this.abilityFailTimer > 0) this.abilityFailTimer--;
+    if (this.speedBoostTimer > 0) {
+      this.speedBoostTimer--;
+      if (this.speedBoostTimer % 5 === 0) addAbilitySpark(this.x, this.y + this.radius * 0.4, ['#ff3b6b', '#ffd1dc'], 9, 18);
+    }
+    if (this.monsterDashTimer > 0) this._updateMonsterDash();
     if (this.aiReactDelay > 0) this.aiReactDelay--;
     if (this.aiPanic > 0) this.aiPanic--;
     if (this.aiOvershoot > 0) this.aiOvershoot--;
@@ -3275,28 +3764,156 @@ class Player {
       this.stunned--; this.vx *= 0.9; this.vy *= 0.9; this.x += this.vx; this.y += this.vy;
       this.x = clamp(this.x, this.radius, WIDTH - this.radius); this.y = clamp(this.y, this.radius, HEIGHT - this.radius); this.hasBall = false; return;
     }
-    if (!this.isDashing) { this.vx *= FRICTION; this.vy *= FRICTION; }
+    if (!this.isDashing && !this.isAbilityDashing) { this.vx *= FRICTION; this.vy *= FRICTION; }
     if (Math.abs(this.vx) < 0.01) this.vx = 0; if (Math.abs(this.vy) < 0.01) this.vy = 0;
     this.x += this.vx; this.y += this.vy;
     this.x = clamp(this.x, this.radius, WIDTH - this.radius); this.y = clamp(this.y, this.radius, HEIGHT - this.radius);
-    if (this.isDashing) {
+    if (this.isAbilityDashing) {
+      ball.carrier = this; this.hasBall = true;
+    } else if (this.isDashing) {
       if (ball.carrier === this) { ball.release(); this.hasBall = false; }
-      else if (ball.carrier === null) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
+      else if (ball.carrier === null && ball.untouchableTimer <= 0) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
       else this.hasBall = false;
     } else if (this.loseControl > 0) { if (ball.carrier === this) ball.release(); this.hasBall = false; }
     else {
-      if (ball.carrier === null) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
+      if (ball.carrier === null && ball.untouchableTimer <= 0) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
       else if (ball.carrier === this) this.hasBall = true; else this.hasBall = false;
     }
     if (!this.isHuman && !gameOver) {
+      this.tryUseAiAbility();
       if (this.aiRole === '1v1') this.aiBehavior1v1();
       else if (this.aiRole === 'teammate') this.aiBehaviorTeammate();
       else if (this.aiRole === 'team2') this.aiBehaviorTeam2();
     }
   }
-  kick(vx, vy) { if (!this.hasBall) return; const mag = Math.hypot(vx, vy); if (mag === 0) return; ball.release(); this.hasBall = false; ball.x = this.x + (vx / mag) * (this.radius + ball.radius + 6); ball.y = this.y + (vy / mag) * (this.radius + ball.radius + 6); ball.vx = (vx / mag) * this.shootPower; ball.vy = (vy / mag) * this.shootPower; this.loseControl = 8; new Particle(ball.x, ball.y, '#fff', 5); new Particle(ball.x, ball.y, this.character ? this.character.color : '#00d4ff', 3); }
+  kick(vx, vy, powerScale = 1, trail = null) { if (!this.hasBall) return; const mag = Math.hypot(vx, vy); if (mag === 0) return; ball.release(); this.hasBall = false; ball.x = this.x + (vx / mag) * (this.radius + ball.radius + 6); ball.y = this.y + (vy / mag) * (this.radius + ball.radius + 6); ball.vx = (vx / mag) * this.shootPower * powerScale; ball.vy = (vy / mag) * this.shootPower * powerScale; if (trail) ball.startTrail(trail.colors, trail.timer, trail.size); this.loseControl = 8; new Particle(ball.x, ball.y, '#fff', 5); new Particle(ball.x, ball.y, this.character ? this.character.color : '#00d4ff', 3); }
   dash(dirX, dirY) { if (this.dashCooldown > 0 || this.stunned > 0 || this.loseControl > 0) return; const mag = Math.hypot(dirX, dirY); if (mag === 0) return; this.dashCooldown = this.dashCooldownMax; this.dashTimer = DASH_DURATION; this.vx = (dirX / mag) * DASH_FORCE; this.vy = (dirY / mag) * DASH_FORCE; new Particle(this.x, this.y, this.character ? this.character.color : '#ff1744', 8); }
   dribble() { if (this.dribbleCooldown > 0 || this.stunned > 0) return; this.dribbleTimer = this.dribbleDurationMax; this.dribbleCooldown = this.dribbleCooldownMax; }
+  getMaxSpeed() { return this.maxSpeed * (this.speedBoostTimer > 0 ? 1.5 : 1); }
+  getDribbleSpeed() { return this.dribbleSpeed * (this.speedBoostTimer > 0 ? 1.5 : 1); }
+  abilityReady() { return this.abilityCooldown <= 0 && this.stunned <= 0 && this.loseControl <= 0 && !gameOver; }
+  _startAbilityCooldown(def) { this.abilityCooldownMax = frames(def.cooldown); this.abilityCooldown = this.abilityCooldownMax; }
+  _abilityFail(reason, human = false) {
+    if (human && this.abilityFailTimer <= 0) {
+      showAbilityMessage(reason);
+      this.abilityFailTimer = ABILITY_FAIL_THROTTLE;
+    }
+    return false;
+  }
+  useAbility(opts = {}) {
+    const human = !!opts.human;
+    const key = getCharacterKey(this.character);
+    const def = ABILITY_DEFS[key];
+    if (!def) return this._abilityFail('No ability equipped', human);
+    if (!this.abilityReady()) {
+      const secs = Math.ceil(this.abilityCooldown / FPS);
+      return this._abilityFail(secs > 0 ? `${def.name} ready in ${secs}s` : 'Ability unavailable', human);
+    }
+    if (key === 'isagi') return this._useDirectShot(def, opts, human);
+    if (key === 'chigiri') return this._useExplosiveSpeed(def);
+    if (key === 'bachira') return this._useMonsterDribble(def, opts, human);
+    if (key === 'rin') return this._useCurvedShot(def, opts, human);
+    if (key === 'nagi') return this._useWorldClassTouch(def, human);
+    if (key === 'barou') return this._usePredatorShot(def, human);
+    return false;
+  }
+  _aimVector(opts = {}) {
+    const target = opts.target || aimPointFromPlayer(this, opts.rawX, opts.rawY);
+    const dx = target.x - this.x, dy = target.y - this.y, mag = Math.hypot(dx, dy);
+    if (mag < 4) return null;
+    return { target, dx, dy, nx: dx / mag, ny: dy / mag, mag };
+  }
+  _useDirectShot(def, opts, human) {
+    if (!this.hasBall) return this._abilityFail('Direct Shot needs the ball', human);
+    const aim = this._aimVector(opts);
+    if (!aim) return this._abilityFail('Aim before shooting', human);
+    this.kick(aim.dx, aim.dy, 1.65, { colors: ['#00ff66', '#d7ffe3'], timer: 54, size: 12 });
+    this._startAbilityCooldown(def);
+    addAbilityLine([{ x: this.x, y: this.y }, { x: this.x + aim.nx * 90, y: this.y + aim.ny * 90 }], ['#00ff66', '#d7ffe3'], 5, 22);
+    return true;
+  }
+  _useExplosiveSpeed(def) {
+    this.speedBoostTimer = frames(4);
+    this._startAbilityCooldown(def);
+    new Particle(this.x, this.y, '#ff3b6b', 12);
+    for (let i = 0; i < 5; i++) addAbilitySpark(this.x - this.vx * i, this.y - this.vy * i, ['#ff3b6b', '#ffd1dc'], 12 - i, 24);
+    return true;
+  }
+  _useMonsterDribble(def, opts, human) {
+    if (!this.hasBall) return this._abilityFail('Monster Dribble needs the ball', human);
+    const aim = this._aimVector(opts);
+    if (!aim) return this._abilityFail('Aim the dash first', human);
+    this.monsterDashDuration = 24;
+    this.monsterDashTimer = this.monsterDashDuration;
+    this.monsterDashDir = { x: aim.nx, y: aim.ny, px: -aim.ny, py: aim.nx };
+    this.loseControl = 0;
+    this._startAbilityCooldown(def);
+    new Particle(this.x, this.y, '#8cff3f', 10);
+    return true;
+  }
+  _updateMonsterDash() {
+    const d = this.monsterDashDir;
+    if (!d) { this.monsterDashTimer = 0; return; }
+    const progress = 1 - this.monsterDashTimer / this.monsterDashDuration;
+    const wave = Math.sin(progress * Math.PI * 4);
+    const speed = 18;
+    this.vx = d.x * speed + d.px * wave * 6;
+    this.vy = d.y * speed + d.py * wave * 6;
+    const trailX = this.x - d.x * 20 + d.px * wave * 13;
+    const trailY = this.y - d.y * 20 + d.py * wave * 13;
+    addAbilitySpark(trailX, trailY, ['#8cff3f', '#ffe56d'], 11, 22);
+    this.monsterDashTimer--;
+  }
+  _useCurvedShot(def, opts, human) {
+    if (!this.hasBall) return this._abilityFail('Curved Shot needs the ball', human);
+    const target = opts.target || aimPointFromPlayer(this, opts.rawX, opts.rawY);
+    if (dist(this.x, this.y, target.x, target.y) < 30) return this._abilityFail('Aim farther out', human);
+    ball.startCurveShot(this, target, ['#55d7ff', '#dff8ff']);
+    this.loseControl = 10;
+    this._startAbilityCooldown(def);
+    return true;
+  }
+  _useWorldClassTouch(def, human) {
+    if (ball.carrier) return this._abilityFail('Ball is not loose', human);
+    const d = dist(this.x, this.y, ball.x, ball.y);
+    if (d > NAGI_TOUCH_RANGE) return this._abilityFail('Ball is too far away', human);
+    addAbilityLine([{ x: ball.x, y: ball.y }, { x: this.x, y: this.y }], ['#d8f1ff', '#7fd7ff'], 6, 24);
+    for (let i = 0; i < 12; i++) addAbilitySpark(ball.x, ball.y, ['#d8f1ff', '#7fd7ff'], 10, 24);
+    ball.vx = 0; ball.vy = 0; ball.curve = null; ball.trail = null; ball.untouchableTimer = 0;
+    ball.carrier = this; this.hasBall = true;
+    this._startAbilityCooldown(def);
+    return true;
+  }
+  _usePredatorShot(def, human) {
+    if (!this.hasBall) return this._abilityFail('Predator Shot needs the ball', human);
+    if (!hasClearShotToGoal(this)) return this._abilityFail('No clear shot to goal', human);
+    const goal = opponentGoalPoint(this);
+    this.kick(goal.x - this.x, goal.y - this.y, 1.25, { colors: ['#090909', '#ff1744'], timer: 58, size: 14 });
+    this._startAbilityCooldown(def);
+    addAbilityLine([{ x: this.x, y: this.y }, { x: goal.x, y: goal.y }], ['#111', '#ff1744'], 7, 30);
+    return true;
+  }
+  tryUseAiAbility() {
+    if (kickoffCooldown > 0 || this.abilityCooldown > 0 || this.stunned > 0 || this.loseControl > 0) return false;
+    this.aiAbilityThink--;
+    if (this.aiAbilityThink > 0) return false;
+    this.aiAbilityThink = 22 + Math.floor(Math.random() * 50);
+    const key = getCharacterKey(this.character);
+    if (!key) return false;
+    const goal = opponentGoalPoint(this);
+    const nearestOpp = players.filter(p => p.team !== this.team).sort((a, b) => dist(this.x, this.y, a.x, a.y) - dist(this.x, this.y, b.x, b.y))[0];
+    if (key === 'nagi' && !ball.carrier && dist(this.x, this.y, ball.x, ball.y) <= NAGI_TOUCH_RANGE) return this.useAbility();
+    if (key === 'chigiri') {
+      const chasing = !this.hasBall && (!ball.carrier || ball.carrier.team !== this.team) && dist(this.x, this.y, ball.x, ball.y) < 260;
+      const carrying = this.hasBall && Math.abs(goal.x - this.x) > 180;
+      if (chasing || carrying) return this.useAbility();
+    }
+    if (!this.hasBall) return false;
+    if (key === 'bachira' && nearestOpp && dist(this.x, this.y, nearestOpp.x, nearestOpp.y) < 155) return this.useAbility({ target: goal });
+    if (key === 'barou' && hasClearShotToGoal(this)) return this.useAbility();
+    if ((key === 'isagi' || key === 'rin') && Math.abs(goal.x - this.x) < 390) return this.useAbility({ target: goal });
+    return false;
+  }
   _getDiffParams() {
     const diff = DIFFICULTY[selectedDifficulty];
     const behavior = this.character ? (this.character.behavior || 'allrounder') : 'allrounder';
@@ -3318,7 +3935,7 @@ class Player {
     }
     return { aiAccel, aiDribbleDist, aiDribbleMiss, aiShootSpread, aiShootPower, aiSideStep, aiTackleRange, aiTackleWindupMin, aiTackleWindupMax, aiOvershootChance, aiChaseSpd, aiDashChance, aiPassChance, shootThreshold, diff };
   }
-  _clampSpeed() { const maxSpd = this.hasBall ? this.dribbleSpeed : this.maxSpeed; const spd = Math.hypot(this.vx, this.vy); if (spd > maxSpd && !this.isDashing) { this.vx = (this.vx / spd) * maxSpd; this.vy = (this.vy / spd) * maxSpd; } }
+  _clampSpeed() { const maxSpd = this.hasBall ? this.getDribbleSpeed() : this.getMaxSpeed(); const spd = Math.hypot(this.vx, this.vy); if (spd > maxSpd && !this.isDashing && !this.isAbilityDashing) { this.vx = (this.vx / spd) * maxSpd; this.vy = (this.vy / spd) * maxSpd; } }
   // ─── 1v1 AI: Aggressive single opponent ───────────────────────────────
   aiBehavior1v1() {
     const human = players.find(p => p.team !== this.team && p.isHuman);
@@ -3617,7 +4234,7 @@ function resolveCollisions() {
         else if (target.hasBall) { ball.release(); target.hasBall = false; target.stunned = 25; ball.x = target.x; ball.y = target.y; ball.vx = 0; ball.vy = 0; dasher.dashTimer = 0; new Particle(target.x, target.y, '#ff1744', 8); new Particle(dasher.x, dasher.y, dasher.character ? dasher.character.color : '#4488ff', 5); }
       };
       checkDash(p1, p2); checkDash(p2, p1);
-      if (p1.isDashing || p2.isDashing) continue;
+      if (p1.isDashing || p2.isDashing || p1.isAbilityDashing || p2.isAbilityDashing) continue;
       const overlap = minDist - d; const nx = (p2.x - p1.x) / d; const ny = (p2.y - p1.y) / d;
       p1.x -= nx * overlap * 0.5; p1.y -= ny * overlap * 0.5; p2.x += nx * overlap * 0.5; p2.y += ny * overlap * 0.5;
       const t1vx = p1.vx * 0.4, t1vy = p1.vy * 0.4; p1.vx = p2.vx * 0.4; p1.vy = p2.vy * 0.4; p2.vx = t1vx; p2.vy = t1vy;
@@ -3626,6 +4243,17 @@ function resolveCollisions() {
 }
 
 // ─── Drawing Functions ───────────────────────────────────────
+function getPredatorGoalTargets() {
+  const targets = { left: 0, right: 0 };
+  for (const p of players) {
+    if (getCharacterKey(p.character) !== 'barou' || !p.hasBall || p.abilityCooldown > 0) continue;
+    if (!hasClearShotToGoal(p)) continue;
+    if (p.team === 'blue') targets.right = 1;
+    else targets.left = 1;
+  }
+  return targets;
+}
+
 function drawField() {
   const fieldImg = IMAGES['field'];
   if (fieldImg && fieldImg.complete && fieldImg.naturalWidth > 0) { ctx.drawImage(fieldImg, 0, 0, WIDTH, HEIGHT); ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(0, 0, WIDTH, HEIGHT); }
@@ -3637,9 +4265,29 @@ function drawField() {
   ctx.beginPath(); ctx.arc(WIDTH / 2, HEIGHT / 2, 4, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; ctx.fill();
   ctx.shadowBlur = 0;
   const goalTop = HEIGHT / 2 - GOAL_WIDTH / 2;
+  const predatorTargets = getPredatorGoalTargets();
+  predatorGoalGlow.left += (predatorTargets.left - predatorGoalGlow.left) * 0.12;
+  predatorGoalGlow.right += (predatorTargets.right - predatorGoalGlow.right) * 0.12;
   ctx.fillStyle = 'rgba(0, 80, 200, 0.15)'; ctx.fillRect(0, goalTop, GOAL_DEPTH, GOAL_WIDTH); ctx.fillRect(WIDTH - GOAL_DEPTH, goalTop, GOAL_DEPTH, GOAL_WIDTH);
   ctx.shadowColor = 'rgba(0, 150, 255, 0.8)'; ctx.shadowBlur = 10; ctx.strokeStyle = 'rgba(0, 180, 255, 0.9)'; ctx.lineWidth = 3;
   ctx.strokeRect(0, goalTop, GOAL_DEPTH, GOAL_WIDTH); ctx.strokeRect(WIDTH - GOAL_DEPTH, goalTop, GOAL_DEPTH, GOAL_WIDTH); ctx.shadowBlur = 0;
+  if (predatorGoalGlow.left > 0.01 || predatorGoalGlow.right > 0.01) {
+    ctx.save();
+    const drawPredatorGoal = (x, glow) => {
+      if (glow <= 0.01) return;
+      ctx.globalAlpha = glow;
+      ctx.fillStyle = 'rgba(0, 255, 102, 0.28)';
+      ctx.fillRect(x, goalTop, GOAL_DEPTH, GOAL_WIDTH);
+      ctx.shadowColor = 'rgba(0,255,102,0.95)';
+      ctx.shadowBlur = 18 * glow;
+      ctx.strokeStyle = 'rgba(0,255,102,0.95)';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(x, goalTop, GOAL_DEPTH, GOAL_WIDTH);
+    };
+    drawPredatorGoal(0, predatorGoalGlow.left);
+    drawPredatorGoal(WIDTH - GOAL_DEPTH, predatorGoalGlow.right);
+    ctx.restore();
+  }
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.lineWidth = 2;
   ctx.strokeRect(30, HEIGHT / 2 - 150, 130, 300); ctx.strokeRect(WIDTH - 160, HEIGHT / 2 - 150, 130, 300);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
@@ -3661,6 +4309,42 @@ function drawShootIndicator() {
 }
 
 // ─── Goal & End Game ───────────────────────────────────────
+function updateAbilityHud() {
+  const hud = document.getElementById('abilityHud');
+  if (!hud) return;
+  const hp = humanPlayer();
+  const def = getAbilityDefForPlayer(hp);
+  if (gameState !== 'playing' || !hp || !def) {
+    hud.style.display = 'none';
+    return;
+  }
+  hud.style.display = 'block';
+  const card = document.getElementById('abilityHudCard');
+  const icon = document.getElementById('abilityHudIcon');
+  const name = document.getElementById('abilityHudName');
+  const fill = document.getElementById('abilityHudFill');
+  const status = document.getElementById('abilityHudStatus');
+  const msg = document.getElementById('abilityHudMessage');
+  const readyPercent = hp.abilityCooldownMax > 0 ? clamp(1 - hp.abilityCooldown / hp.abilityCooldownMax, 0, 1) : 1;
+  card.style.setProperty('--ability-color', def.color);
+  card.style.setProperty('--ability-glow', def.glow);
+  card.style.setProperty('--cooldown-percent', Math.round(readyPercent * 100) + '%');
+  card.style.setProperty('--cooldown-deg', Math.round(readyPercent * 360) + 'deg');
+  icon.textContent = def.icon;
+  name.textContent = def.name;
+  fill.style.width = Math.round(readyPercent * 100) + '%';
+  if (hp.abilityCooldown > 0) status.textContent = 'Cooldown ' + Math.ceil(hp.abilityCooldown / FPS) + 's';
+  else if (getCharacterKey(hp.character) === 'barou' && hp.hasBall && !hasClearShotToGoal(hp)) status.textContent = 'Find lane';
+  else status.textContent = 'Ready';
+  if (abilityFeedback.timer > 0) {
+    abilityFeedback.timer--;
+    msg.textContent = abilityFeedback.text;
+    msg.classList.add('show');
+  } else {
+    msg.classList.remove('show');
+  }
+}
+
 function triggerGoalEffect() {
   const flash = document.getElementById('goalFlash'); const goalText = document.getElementById('goalText');
   flash.style.display = 'block'; goalText.style.display = 'block'; goalText.style.animation = 'none'; goalText.offsetHeight; goalText.style.animation = 'goalPulse 0.8s ease-out';
@@ -3745,6 +4429,7 @@ function returnToMenu() {
   gameState = 'menu';
   gameOver = false;
   scores = { blue: 0, red: 0 };
+  resetAbilityPresentation();
   showMainMenu();
 }
 
@@ -3786,6 +4471,7 @@ function startTrainingMode(charKey, rarity) {
   document.body.style.cursor = 'crosshair';
   gameOver = false;
   scores = { blue: 0, red: 0 };
+  resetAbilityPresentation();
   ball.reset(false);
   initPlayersTraining();
 }
@@ -3804,10 +4490,26 @@ window.addEventListener('mousedown', e => {
 });
 window.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
-  mouse.x = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
-  mouse.y = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
+  mouse.rawX = e.clientX - rect.left;
+  mouse.rawY = e.clientY - rect.top;
+  mouse.x = Math.max(0, Math.min(WIDTH, mouse.rawX));
+  mouse.y = Math.max(0, Math.min(HEIGHT, mouse.rawY));
 });
-window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key === 'Escape' && gameState === 'playing') leaveGame(); });
+function activateHumanAbility() {
+  if (gameState !== 'playing' || gameOver) return;
+  const hp = humanPlayer();
+  if (!hp) return;
+  hp.useAbility({ human: true, rawX: mouse.rawX, rawY: mouse.rawY });
+}
+window.addEventListener('keydown', e => {
+  const key = e.key.toLowerCase();
+  keys[key] = true;
+  if (e.key === 'Escape' && gameState === 'playing') leaveGame();
+  if (key === 'q' && !e.repeat) {
+    e.preventDefault();
+    activateHumanAbility();
+  }
+});
 window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
 // ─── Game Loop ─────────────────────────────────────────────
@@ -3822,7 +4524,7 @@ function gameLoop() {
       if (keys['a'] || keys['arrowleft']) ax -= PLAYER_ACCEL;
       if (keys['d'] || keys['arrowright']) ax += PLAYER_ACCEL;
       hp.vx += ax; hp.vy += ay;
-      const maxSpd = hp.hasBall ? hp.dribbleSpeed : hp.maxSpeed;
+      const maxSpd = hp.hasBall ? hp.getDribbleSpeed() : hp.getMaxSpeed();
       const spd = Math.hypot(hp.vx, hp.vy);
       if (spd > maxSpd) { hp.vx = (hp.vx / spd) * maxSpd; hp.vy = (hp.vy / spd) * maxSpd; }
       // Track input for idle detection (only in 2v2 multiplayer)
@@ -3841,9 +4543,10 @@ function gameLoop() {
       }
       checkForfeit();
     }
-    players.forEach(p => p.update()); ball.update(); Particle.updateAll(); resolveCollisions();
+    players.forEach(p => p.update()); ball.update(); Particle.updateAll(); AbilityEffect.updateAll(); resolveCollisions();
   }
-  ctx.clearRect(0, 0, WIDTH, HEIGHT); drawField(); players.sort((a, b) => a.y - b.y); players.forEach(p => p.draw()); ball.draw(); Particle.drawAll(); drawShootIndicator();
+  updateAbilityHud();
+  ctx.clearRect(0, 0, WIDTH, HEIGHT); drawField(); AbilityEffect.drawAll(); players.sort((a, b) => a.y - b.y); players.forEach(p => p.draw()); ball.draw(); Particle.drawAll(); drawShootIndicator();
   requestAnimationFrame(gameLoop);
 }
 gameLoop();
