@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="1.0.0">
+<meta name="app-version" content="1.0.1">
 <title>BLUE LOCK — Ego Striker</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
@@ -1088,8 +1088,14 @@ canvas {
 </div>
 </div>
 
+<!-- Boot Page -->
+<div id="bootPage" class="screen-overlay">
+<h1>BLUE LOCK</h1>
+<div class="subtitle">Loading your Ego</div>
+</div>
+
 <!-- Login Page -->
-<div id="loginPage" class="screen-overlay">
+<div id="loginPage" class="screen-overlay hidden">
 <h1>BLUE LOCK</h1>
 <div class="subtitle">Sign in to prove your Ego</div>
 <button id="googleSignInBtn" onclick="signInWithGoogle()">
@@ -1517,7 +1523,7 @@ let opponent1Character = null;
 let opponent2Character = null;
 let lastOpponentKeys = []; // track recent opponents to avoid repeats
 let party2v2Config = null; // 'coop' or 'vs' for party 2v2 modes
-let gameState = 'login';
+let gameState = 'boot';
 let inMatch = false;
 let gameOver = false;
 let scores = { blue: 0, red: 0 };
@@ -1597,13 +1603,19 @@ async function signOut() {
 }
 
 async function checkSession() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    await loadPlayerData();
-    // Try to restore previous menu after an update reload
-    if (!restoreMenuState()) showMainMenu();
-  } else {
+  try {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+    if (session) {
+      currentUser = session.user;
+      await loadPlayerData();
+      // Try to restore previous menu after an update reload
+      if (!restoreMenuState()) showMainMenu();
+    } else {
+      showLoginPage();
+    }
+  } catch (e) {
+    console.error('Session check failed:', e);
     showLoginPage();
   }
 }
