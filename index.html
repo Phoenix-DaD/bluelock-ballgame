@@ -3858,7 +3858,55 @@ class Player {
       else if (this.aiRole === 'team2') this.aiBehaviorTeam2();
     }
   }
-  kick(vx, vy, powerScale = 1, trail = null) { if (!this.hasBall) return; const mag = Math.hypot(vx, vy); if (mag === 0) return; ball.release(); this.hasBall = false; ball.x = this.x + (vx / mag) * (this.radius + ball.radius + 6); ball.y = this.y + (vy / mag) * (this.radius + ball.radius + 6); ball.vx = (vx / mag) * this.shootPower * powerScale; ball.vy = (vy / mag) * this.shootPower * powerScale; if (trail) ball.startTrail(trail.colors, trail.timer, trail.size); this.loseControl = 8; new Particle(ball.x, ball.y, '#fff', 5); new Particle(ball.x, ball.y, this.character ? this.character.color : '#00d4ff', 3); }
+  _findShotBlocker(nx, ny, speed) {
+    const reach = clamp(speed * 24, 260, 560);
+    const endX = this.x + nx * reach, endY = this.y + ny * reach;
+    let closest = null;
+    for (const p of players) {
+      if (p === this) continue;
+      const hit = pointLineDistance(p.x, p.y, this.x, this.y, endX, endY);
+      const ahead = (p.x - this.x) * nx + (p.y - this.y) * ny;
+      if (ahead <= this.radius * 0.45 || hit.t <= 0.01 || hit.t >= 1) continue;
+      if (hit.distance > p.radius + BALL_RADIUS + 8) continue;
+      if (!closest || ahead < closest.ahead) closest = { player: p, hit, ahead };
+    }
+    return closest;
+  }
+  _blockShot(blocker, nx, ny, speed) {
+    if (ball.carrier === this) ball.release();
+    this.hasBall = false;
+    ball.curve = null;
+    ball.trail = null;
+    ball.untouchableTimer = 0;
+    ball.carrier = null;
+    ball.x = blocker.x - nx * (blocker.radius + ball.radius + 3);
+    ball.y = blocker.y - ny * (blocker.radius + ball.radius + 3);
+    ball.vx = -nx * Math.min(7, speed * 0.32) + blocker.vx * 0.35;
+    ball.vy = -ny * Math.min(7, speed * 0.32) + blocker.vy * 0.35;
+    this.loseControl = 10;
+    blocker.loseControl = Math.max(blocker.loseControl, 5);
+    new Particle(ball.x, ball.y, '#ffffff', 8);
+    new Particle(blocker.x, blocker.y, blocker.character ? blocker.character.color : '#00d4ff', 6);
+    addAbilitySpark(ball.x, ball.y, ['#ffffff', '#00d4ff'], 9, 18);
+  }
+  kick(vx, vy, powerScale = 1, trail = null) {
+    if (!this.hasBall) return false;
+    const mag = Math.hypot(vx, vy);
+    if (mag === 0) return false;
+    const nx = vx / mag, ny = vy / mag;
+    const speed = this.shootPower * powerScale;
+    const blocker = this._findShotBlocker(nx, ny, speed);
+    if (blocker) { this._blockShot(blocker.player, nx, ny, speed); return true; }
+    ball.release(); this.hasBall = false;
+    ball.x = this.x + nx * (this.radius + ball.radius + 6);
+    ball.y = this.y + ny * (this.radius + ball.radius + 6);
+    ball.vx = nx * speed; ball.vy = ny * speed;
+    if (trail) ball.startTrail(trail.colors, trail.timer, trail.size);
+    this.loseControl = 8;
+    new Particle(ball.x, ball.y, '#fff', 5);
+    new Particle(ball.x, ball.y, this.character ? this.character.color : '#00d4ff', 3);
+    return true;
+  }
   dash(dirX, dirY) { if (this.dashCooldown > 0 || this.stunned > 0 || this.loseControl > 0) return; const mag = Math.hypot(dirX, dirY); if (mag === 0) return; this.dashCooldown = this.dashCooldownMax; this.dashTimer = DASH_DURATION; this.vx = (dirX / mag) * DASH_FORCE; this.vy = (dirY / mag) * DASH_FORCE; new Particle(this.x, this.y, this.character ? this.character.color : '#ff1744', 8); }
   dribble() { if (this.dribbleCooldown > 0 || this.stunned > 0) return; this.dribbleTimer = this.dribbleDurationMax; this.dribbleCooldown = this.dribbleCooldownMax; }
   getMaxSpeed() { return this.maxSpeed * (this.speedBoostTimer > 0 ? 1.5 : 1); }
@@ -4145,11 +4193,14 @@ class Player {
   _passTo(targetX, targetY) {
     const dx = targetX - this.x, dy = targetY - this.y, mag = Math.hypot(dx, dy);
     if (mag === 0) return;
+    const nx = dx / mag, ny = dy / mag, speed = 10;
+    const blocker = this._findShotBlocker(nx, ny, speed);
+    if (blocker) { this._blockShot(blocker.player, nx, ny, speed); return; }
     ball.release(); this.hasBall = false;
-    ball.x = this.x + (dx / mag) * (this.radius + ball.radius + 6);
-    ball.y = this.y + (dy / mag) * (this.radius + ball.radius + 6);
-    ball.vx = (dx / mag) * 10;
-    ball.vy = (dy / mag) * 10;
+    ball.x = this.x + nx * (this.radius + ball.radius + 6);
+    ball.y = this.y + ny * (this.radius + ball.radius + 6);
+    ball.vx = nx * speed;
+    ball.vy = ny * speed;
     this.loseControl = 8;
   }
   // ─── Team2 AI: Coordinated 2-AI opponent pair ─────────────────────
