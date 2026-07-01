@@ -1442,8 +1442,8 @@ canvas {
 #abilityHud {
   position: absolute;
   right: -168px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 16px;
+  transform: none;
   width: 144px;
   display: none;
   pointer-events: none;
@@ -1542,10 +1542,11 @@ canvas {
 }
 @media (max-width: 1260px) {
   #abilityHud {
-    right: 12px;
-    top: 14px;
-    transform: none;
-    width: 132px;
+    left: 50%;
+    right: auto;
+    top: 10px;
+    transform: translateX(-50%);
+    width: 140px;
   }
   .ability-hud-card { padding: 9px; }
   .ability-hud-icon { width: 34px; height: 34px; font-size: 12px; }
@@ -3660,11 +3661,35 @@ class Ball {
       timer: 0,
       duration: clamp(Math.round(mag / 9), 34, 62),
       colors,
+      shooter: player,
       lastX: this.x,
       lastY: this.y
     };
-    this.untouchableTimer = this.curve.duration + 4;
+    this.untouchableTimer = 0;
     this.startTrail(colors, this.curve.duration + 12, 13);
+  }
+  attachTo(player) {
+    if (this.carrier && this.carrier !== player) this.carrier.hasBall = false;
+    this.curve = null;
+    this.trail = null;
+    this.untouchableTimer = 0;
+    this.carrier = player;
+    player.hasBall = true;
+  }
+  tryInterception() {
+    if (this.carrier || gameOver) return false;
+    for (const p of players) {
+      if (this.curve && this.curve.shooter === p && this.curve.timer < 10) continue;
+      if (p.loseControl > 0 || p.stunned > 0) continue;
+      if (dist(p.x, p.y, this.x, this.y) < p.radius + this.radius + 6) {
+        this.attachTo(p);
+        this.vx = p.vx;
+        this.vy = p.vy;
+        new Particle(this.x, this.y, p.character ? p.character.color : '#fff', 7);
+        return true;
+      }
+    }
+    return false;
   }
   update() {
     if (this.untouchableTimer > 0) this.untouchableTimer--;
@@ -3687,6 +3712,7 @@ class Ball {
         this.curve = null;
       }
       c.lastX = this.x; c.lastY = this.y;
+      if (this.tryInterception()) return;
       this.checkGoal();
       return;
     }
@@ -3707,6 +3733,7 @@ class Ball {
       if (this.x + this.radius > WIDTH) { this.x = WIDTH - this.radius; this.vx *= -0.7; }
       if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -0.7; }
       if (this.y + this.radius > HEIGHT) { this.y = HEIGHT - this.radius; this.vy *= -0.7; }
+      if (this.tryInterception()) return;
     }
     if (this.trail && this.trail.timer > 0) {
       addAbilitySpark(this.x, this.y, this.trail.colors, this.trail.size, 24);
@@ -3722,7 +3749,7 @@ class Ball {
         this.x = this.radius + GOAL_DEPTH + 2;
         this.vx = Math.abs(this.vx) * 0.7;
       } else {
-        scores.red++; triggerGoalEffect(); updateScore(); this.reset();
+        scores.red++; triggerGoalEffect(); updateScore(); respawnAfterGoal();
         if (scores.red >= WIN_SCORE) endGame('Rival Wins — Your Ego Wasn\'t Enough', false);
       }
     } else if (this.x + this.radius > WIDTH - GOAL_DEPTH && this.y > goalTop && this.y < goalBot) {
@@ -3730,7 +3757,7 @@ class Ball {
         this.x = WIDTH - GOAL_DEPTH - this.radius - 2;
         this.vx = -Math.abs(this.vx) * 0.7;
       } else {
-        scores.blue++; triggerGoalEffect(); updateScore(); this.reset();
+        scores.blue++; triggerGoalEffect(); updateScore(); respawnAfterGoal();
         if (scores.blue >= WIN_SCORE) endGame('You Win — The Best Striker!', true);
       }
     }
@@ -3796,14 +3823,14 @@ class Player {
     this.x += this.vx; this.y += this.vy;
     this.x = clamp(this.x, this.radius, WIDTH - this.radius); this.y = clamp(this.y, this.radius, HEIGHT - this.radius);
     if (this.isAbilityDashing) {
-      ball.carrier = this; this.hasBall = true;
+      ball.attachTo(this);
     } else if (this.isDashing) {
       if (ball.carrier === this) { ball.release(); this.hasBall = false; }
-      else if (ball.carrier === null && ball.untouchableTimer <= 0) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
+      else if (ball.carrier === null) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) ball.attachTo(this); }
       else this.hasBall = false;
     } else if (this.loseControl > 0) { if (ball.carrier === this) ball.release(); this.hasBall = false; }
     else {
-      if (ball.carrier === null && ball.untouchableTimer <= 0) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) { ball.carrier = this; this.hasBall = true; } }
+      if (ball.carrier === null) { if (dist(this.x, this.y, ball.x, ball.y) < this.radius + ball.radius + 4) ball.attachTo(this); }
       else if (ball.carrier === this) this.hasBall = true; else this.hasBall = false;
     }
     if (!this.isHuman && !gameOver) {
@@ -4247,6 +4274,41 @@ initPlayers();
 const bluePlayer = () => players.find(p => p.team === 'blue' && p.isHuman) || players.find(p => p.team === 'blue');
 const redPlayer = () => players.find(p => p.team === 'red' && p.isHuman) || players.find(p => p.team === 'red');
 const humanPlayer = () => players.find(p => p.isHuman);
+
+function snapshotAbilityTimers() {
+  return players.map(p => ({
+    team: p.team,
+    isHuman: p.isHuman,
+    wasHuman: p.wasHuman,
+    aiRole: p.aiRole,
+    characterKey: getCharacterKey(p.character),
+    abilityCooldown: p.abilityCooldown,
+    abilityCooldownMax: p.abilityCooldownMax
+  }));
+}
+
+function restoreAbilityTimers(snapshot) {
+  const used = new Set();
+  for (const player of players) {
+    const characterKey = getCharacterKey(player.character);
+    const index = snapshot.findIndex((saved, i) => !used.has(i)
+      && saved.team === player.team
+      && saved.isHuman === player.isHuman
+      && saved.wasHuman === player.wasHuman
+      && saved.aiRole === player.aiRole
+      && saved.characterKey === characterKey);
+    if (index === -1) continue;
+    used.add(index);
+    player.abilityCooldown = snapshot[index].abilityCooldown;
+    player.abilityCooldownMax = snapshot[index].abilityCooldownMax;
+  }
+}
+
+function respawnAfterGoal() {
+  const abilityTimers = snapshotAbilityTimers();
+  ball.reset();
+  restoreAbilityTimers(abilityTimers);
+}
 
 function resolveCollisions() {
   // Resolve collisions between all pairs of players
