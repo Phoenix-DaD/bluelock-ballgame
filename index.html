@@ -331,32 +331,38 @@ canvas {
 }
 .party-widget.active {
   display: flex;
-  animation: partyWidgetOpen 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: partyWidgetOpen 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .party-widget.active .party-open-lines {
-  animation: partyLinesFade 0.72s ease-out both;
+  animation: partyLinesFade 0.82s ease-out both;
 }
 .party-widget.active .party-open-lines span:first-child {
-  animation: partyLineTop 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: partyLineTop 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .party-widget.active .party-open-lines span:last-child {
-  animation: partyLineBottom 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: partyLineBottom 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .party-open-lines {
   position: absolute;
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  background: rgba(3, 8, 24, 0.92);
+  background:
+    linear-gradient(180deg, rgba(3, 8, 24, 0.98), rgba(4, 12, 32, 0.94)),
+    rgba(3, 8, 24, 0.96);
 }
 .party-open-lines span {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 50%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00d4ff 16%, #fff 50%, #ffd700 84%, transparent);
-  box-shadow: 0 0 18px rgba(0,212,255,0.9), 0 0 26px rgba(255,215,0,0.34);
+  left: 14px;
+  right: 14px;
+  top: calc(50% - 2px);
+  height: 3px;
+  transform-origin: center;
+  background:
+    linear-gradient(90deg, transparent 0%, #00d4ff 14%, #fff 50%, #ffd700 86%, transparent 100%);
+  box-shadow:
+    0 0 16px rgba(0,212,255,0.95),
+    0 0 30px rgba(255,215,0,0.38);
 }
 .party-widget .party-header {
   position: relative; z-index: 1;
@@ -412,22 +418,22 @@ canvas {
   50% { transform: scale(1.35); opacity: 1; }
 }
 @keyframes partyWidgetOpen {
-  0% { opacity: 0; transform: translateX(-28px) scaleX(0.05); filter: blur(5px); }
-  34% { opacity: 1; transform: translateX(-8px) scaleX(0.18); filter: blur(2px); }
-  100% { opacity: 1; transform: translateX(0) scaleX(1); filter: blur(0); }
+  0% { opacity: 0; transform: translateX(-24px); filter: blur(5px); }
+  28% { opacity: 1; transform: translateX(-10px); filter: blur(2px); }
+  100% { opacity: 1; transform: translateX(0); filter: blur(0); }
 }
 @keyframes partyLineTop {
-  0% { transform: translateY(0) scaleX(0.12); opacity: 0; }
-  18% { opacity: 1; }
-  100% { transform: translateY(-94px) scaleX(1); opacity: 0.95; }
+  0% { transform: translateY(-4px) scaleX(0.18); opacity: 0; }
+  18% { transform: translateY(-4px) scaleX(1); opacity: 1; }
+  100% { transform: translateY(-124px) scaleX(1); opacity: 1; }
 }
 @keyframes partyLineBottom {
-  0% { transform: translateY(0) scaleX(0.12); opacity: 0; }
-  18% { opacity: 1; }
-  100% { transform: translateY(94px) scaleX(1); opacity: 0.95; }
+  0% { transform: translateY(4px) scaleX(0.18); opacity: 0; }
+  18% { transform: translateY(4px) scaleX(1); opacity: 1; }
+  100% { transform: translateY(124px) scaleX(1); opacity: 1; }
 }
 @keyframes partyLinesFade {
-  0%, 78% { opacity: 1; }
+  0%, 72% { opacity: 1; }
   100% { opacity: 0; visibility: hidden; }
 }
 .party-avatars-row {
