@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="1.0.3">
+<meta name="app-version" content="1.0.4">
 <title>BLUE LOCK — Ego Striker</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
@@ -289,72 +289,207 @@ canvas {
 
 /* Party Widget */
 .party-widget {
-  position: fixed; bottom: 20px; left: 20px;
-  background: rgba(10, 10, 30, 0.95);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 14px 18px;
+  position: fixed; bottom: 22px; left: 22px;
+  width: min(340px, calc(100vw - 44px));
+  background:
+    linear-gradient(135deg, rgba(0, 212, 255, 0.16), transparent 28%),
+    linear-gradient(315deg, rgba(255, 215, 0, 0.08), transparent 30%),
+    rgba(5, 8, 24, 0.96);
+  border: 1px solid rgba(0, 212, 255, 0.24);
+  border-left: 4px solid #00d4ff;
+  border-radius: 8px;
+  padding: 16px;
   z-index: 40;
   display: none;
   flex-direction: column;
-  gap: 10px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+  gap: 14px;
+  backdrop-filter: blur(14px);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  box-shadow: 0 16px 44px rgba(0,0,0,0.58), 0 0 34px rgba(0, 120, 255, 0.18);
+  overflow: hidden;
+}
+.party-widget::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,212,255,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.75;
+  pointer-events: none;
+}
+.party-widget::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 92px; height: 3px;
+  background: linear-gradient(90deg, transparent, #ffd700);
+  box-shadow: 0 0 18px rgba(255,215,0,0.5);
+  pointer-events: none;
 }
 .party-widget.active { display: flex; }
 .party-widget .party-header {
-  font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif;
-  text-transform: uppercase; letter-spacing: 2px; color: #ffd700;
+  position: relative; z-index: 1;
   display: flex; justify-content: space-between; align-items: center;
+  gap: 14px;
+}
+.party-title-block { display: flex; flex-direction: column; gap: 2px; }
+.party-kicker {
+  font-size: 10px; font-weight: 700; font-family: 'Roboto Condensed', sans-serif;
+  text-transform: uppercase; letter-spacing: 2.5px; color: rgba(0,212,255,0.68);
+}
+.party-title {
+  font-size: 23px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; letter-spacing: 3px; color: #fff;
+  line-height: 1;
+  text-shadow: 0 0 18px rgba(0,212,255,0.45);
+}
+.party-status {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  font-family: 'Oswald', sans-serif; text-transform: uppercase;
+}
+.party-status-label { font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.45); }
+.party-status-count {
+  min-width: 58px; padding: 5px 9px;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.35);
+  color: #ffd700;
+  font-size: 15px; letter-spacing: 1px; text-align: center;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+}
+.party-widget .party-subline {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  font-family: 'Roboto Condensed', sans-serif; font-size: 11px;
+  letter-spacing: 1.2px; color: rgba(255,255,255,0.62);
+  text-transform: uppercase;
+}
+.party-widget .party-subline strong { color: #00d4ff; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1.5px; }
+.party-widget .party-pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #00d4ff;
+  box-shadow: 0 0 10px rgba(0,212,255,0.9);
+  flex-shrink: 0;
+  animation: partyDotPulse 1.8s ease-in-out infinite;
+}
+@keyframes partyDotPulse {
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(1.35); opacity: 1; }
 }
 .party-avatars-row {
-  display: flex; align-items: center; gap: 12px;
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
 }
 .party-avatar {
-  width: 52px; height: 52px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; font-family: 'Oswald', sans-serif;
+  min-width: 0;
+  height: 86px;
+  border-radius: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px;
+  font-size: 11px; font-weight: 700; font-family: 'Oswald', sans-serif;
   text-transform: uppercase; letter-spacing: 1px;
   cursor: default; position: relative; flex-shrink: 0;
-  border: 2.5px solid;
-  transition: all 0.2s ease;
+  border: 1px solid;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  overflow: hidden;
+}
+.party-avatar::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), transparent 42%);
+  pointer-events: none;
+}
+.party-avatar-mark {
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-size: 15px; line-height: 1;
+  position: relative; z-index: 1;
+}
+.party-avatar-name {
+  position: relative; z-index: 1;
+  max-width: 100%;
+  padding: 0 5px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.82);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .party-avatar-self {
-  background: linear-gradient(135deg, #00d4ff, #0066ff);
-  border-color: rgba(0,212,255,0.5);
+  background: linear-gradient(150deg, rgba(0,212,255,0.24), rgba(0,80,255,0.18));
+  border-color: rgba(0,212,255,0.55);
   color: white;
-  box-shadow: 0 0 16px rgba(0,212,255,0.35);
+  box-shadow: inset 0 0 18px rgba(0,212,255,0.12), 0 0 18px rgba(0,212,255,0.22);
+}
+.party-avatar-self .party-avatar-mark {
+  background: linear-gradient(135deg, #00d4ff, #0057ff);
+  box-shadow: 0 0 18px rgba(0,212,255,0.45);
 }
 .party-avatar-leader-badge {
-  position: absolute; bottom: -2px; right: -2px;
-  width: 16px; height: 16px; border-radius: 50%;
+  position: absolute; top: 7px; right: 7px;
+  width: 18px; height: 18px; border-radius: 50%;
   background: #ffd700; color: #1a1a1a;
-  font-size: 9px; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(0,0,0,0.3);
   font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 0 12px rgba(255,215,0,0.55);
 }
 .party-avatar-friend {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.16);
   color: white; cursor: pointer;
-  font-size: 14px;
 }
 .party-avatar-friend:hover {
-  border-color: rgba(0,212,255,0.5);
-  box-shadow: 0 0 16px rgba(0,212,255,0.25);
-  transform: scale(1.08);
+  border-color: rgba(0,212,255,0.62);
+  box-shadow: 0 0 18px rgba(0,212,255,0.28);
+  transform: translateY(-3px);
+}
+.party-avatar-friend .party-avatar-mark {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
 }
 .party-avatar-invite {
-  background: transparent;
-  border: 2.5px dashed rgba(255,255,255,0.25);
+  background: rgba(0,212,255,0.035);
+  border: 1px dashed rgba(0,212,255,0.36);
   color: rgba(255,255,255,0.5);
-  font-size: 22px; font-weight: 300;
   cursor: pointer;
 }
 .party-avatar-invite:hover {
-  border-color: rgba(0,212,255,0.6);
+  border-color: rgba(0,212,255,0.75);
   color: #00d4ff;
-  box-shadow: 0 0 16px rgba(0,212,255,0.2);
+  box-shadow: 0 0 18px rgba(0,212,255,0.24);
+  transform: translateY(-3px);
+}
+.party-avatar-invite .party-avatar-mark {
+  border: 1px dashed rgba(0,212,255,0.4);
+  color: #00d4ff;
+  font-size: 20px;
+}
+.party-avatar-empty {
+  background: rgba(255,255,255,0.025);
+  border-color: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.26);
+}
+.party-avatar-empty .party-avatar-mark {
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.22);
+}
+@media (max-width: 560px) {
+  .party-widget { bottom: 12px; left: 12px; width: calc(100vw - 24px); padding: 13px; }
+  .party-title { font-size: 19px; letter-spacing: 2px; }
+  .party-avatar { height: 74px; }
+  .party-avatar-mark { width: 32px; height: 32px; font-size: 13px; }
 }
 
 /* Party Friend Action Popup */
@@ -1215,11 +1350,34 @@ Sign in with Google
 
 <!-- Party Widget (bottom left, always visible) -->
 <div class="party-widget active" id="partyWidget">
-  <div class="party-header">PARTY <span id="partyCount">1/4</span></div>
+  <div class="party-header">
+    <div class="party-title-block">
+      <div class="party-kicker">Neo Egoist</div>
+      <div class="party-title">Squad</div>
+    </div>
+    <div class="party-status">
+      <span class="party-status-label">Slots</span>
+      <span class="party-status-count" id="partyCount">1/4</span>
+    </div>
+  </div>
+  <div class="party-subline"><span><strong id="partyStatusText">Solo Queue</strong> Ready</span><span class="party-pulse-dot"></span></div>
   <div class="party-avatars-row" id="partyAvatarsRow">
     <div class="party-avatar party-avatar-self" id="partySelfAvatar" title="You (Leader)">
-      You
+      <span class="party-avatar-mark">YOU</span>
+      <span class="party-avatar-name">Leader</span>
       <span class="party-avatar-leader-badge" id="partyLeaderBadge" style="display:none">★</span>
+    </div>
+    <div class="party-avatar party-avatar-invite" onclick="openPartyInvitePicker()" title="Invite friend">
+      <span class="party-avatar-mark">+</span>
+      <span class="party-avatar-name">Invite</span>
+    </div>
+    <div class="party-avatar party-avatar-empty" title="Empty squad slot">
+      <span class="party-avatar-mark">--</span>
+      <span class="party-avatar-name">Empty</span>
+    </div>
+    <div class="party-avatar party-avatar-empty" title="Empty squad slot">
+      <span class="party-avatar-mark">--</span>
+      <span class="party-avatar-name">Empty</span>
     </div>
   </div>
 </div>
@@ -1956,12 +2114,14 @@ function updatePartyWidget() {
   const memberCount = members.length + 1;
   document.getElementById('partyWidget').classList.add('active');
   document.getElementById('partyCount').textContent = memberCount + '/4';
-  document.getElementById('partyLeaderBadge').style.display = isLeader ? 'flex' : 'none';
+  const statusText = document.getElementById('partyStatusText');
+  if (statusText) statusText.textContent = memberCount > 1 ? 'Ego Link' : 'Solo Queue';
   
   const row = document.getElementById('partyAvatarsRow');
   let html = `
     <div class="party-avatar party-avatar-self" id="partySelfAvatar" title="You${isLeader ? ' (Leader)' : ''}">
-      You
+      <span class="party-avatar-mark">YOU</span>
+      <span class="party-avatar-name">${isLeader ? 'Leader' : 'Member'}</span>
       <span class="party-avatar-leader-badge" id="partyLeaderBadge" style="display:${isLeader ? 'flex' : 'none'}">★</span>
     </div>
   `;
@@ -1969,11 +2129,16 @@ function updatePartyWidget() {
   members.forEach((m, i) => {
     const memberName = escapeHtml(m.display_name || 'Player');
     const memberInitial = escapeHtml((m.display_name || 'P').charAt(0));
-    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(event, ${i})" title="${memberName}${inMatch ? ' (Match in progress)' : ''}">${memberInitial}</div>`;
+    html += `<div class="party-avatar party-avatar-friend" onclick="showPartyFriendPopup(event, ${i})" title="${memberName}${inMatch ? ' (Match in progress)' : ''}"><span class="party-avatar-mark">${memberInitial}</span><span class="party-avatar-name">${memberName}</span></div>`;
   });
   
   if (!inMatch && members.length < 3) {
-    html += `<div class="party-avatar party-avatar-invite" onclick="openPartyInvitePicker()" title="Invite friend">+</div>`;
+    html += `<div class="party-avatar party-avatar-invite" onclick="openPartyInvitePicker()" title="Invite friend"><span class="party-avatar-mark">+</span><span class="party-avatar-name">Invite</span></div>`;
+  }
+
+  const filledSlots = 1 + members.length + (!inMatch && members.length < 3 ? 1 : 0);
+  for (let i = filledSlots; i < 4; i++) {
+    html += `<div class="party-avatar party-avatar-empty" title="Empty squad slot"><span class="party-avatar-mark">--</span><span class="party-avatar-name">Empty</span></div>`;
   }
   
   row.innerHTML = html;
