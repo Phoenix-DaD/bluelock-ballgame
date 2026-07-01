@@ -331,16 +331,16 @@ canvas {
 }
 .party-widget.active {
   display: flex;
-  animation: partyWidgetOpen 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: partyWidgetOpen 2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .party-widget.active .party-open-lines {
-  animation: partyLinesFade 0.82s ease-out both;
+  animation: partyLinesFade 2s ease-out both;
 }
 .party-widget.active .party-open-lines span:first-child {
-  animation: partyLineTop 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: partyLineTop 2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .party-widget.active .party-open-lines span:last-child {
-  animation: partyLineBottom 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: partyLineBottom 2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .party-open-lines {
   position: absolute;
@@ -418,22 +418,25 @@ canvas {
   50% { transform: scale(1.35); opacity: 1; }
 }
 @keyframes partyWidgetOpen {
-  0% { opacity: 0; transform: translateX(-24px); filter: blur(5px); }
-  28% { opacity: 1; transform: translateX(-10px); filter: blur(2px); }
+  0% { opacity: 0; transform: translateX(-18px); filter: blur(5px); }
+  18% { opacity: 1; transform: translateX(-18px); filter: blur(4px); }
+  58% { opacity: 1; transform: translateX(-6px); filter: blur(2px); }
   100% { opacity: 1; transform: translateX(0); filter: blur(0); }
 }
 @keyframes partyLineTop {
-  0% { transform: translateY(-4px) scaleX(0.18); opacity: 0; }
-  18% { transform: translateY(-4px) scaleX(1); opacity: 1; }
+  0% { transform: translateY(-4px) scaleX(0.02); opacity: 0; }
+  14% { transform: translateY(-4px) scaleX(0.14); opacity: 1; }
+  50% { transform: translateY(-4px) scaleX(1); opacity: 1; }
   100% { transform: translateY(-124px) scaleX(1); opacity: 1; }
 }
 @keyframes partyLineBottom {
-  0% { transform: translateY(4px) scaleX(0.18); opacity: 0; }
-  18% { transform: translateY(4px) scaleX(1); opacity: 1; }
+  0% { transform: translateY(4px) scaleX(0.02); opacity: 0; }
+  14% { transform: translateY(4px) scaleX(0.14); opacity: 1; }
+  50% { transform: translateY(4px) scaleX(1); opacity: 1; }
   100% { transform: translateY(124px) scaleX(1); opacity: 1; }
 }
 @keyframes partyLinesFade {
-  0%, 72% { opacity: 1; }
+  0%, 82% { opacity: 1; }
   100% { opacity: 0; visibility: hidden; }
 }
 .party-avatars-row {
