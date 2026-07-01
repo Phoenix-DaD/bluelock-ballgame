@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="water" x1="20" y1="96" x2="108" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#55d7ff"/>
+      <stop offset=".5" stop-color="#dff8ff"/>
+      <stop offset="1" stop-color="#1976ff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="#06111d"/>
+  <path d="M22 88c34-8 18-52 56-58 14-2 24 2 33 11" fill="none" stroke="url(#water)" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M94 30h23v23" fill="none" stroke="#dff8ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="29" cy="89" r="10" fill="#dff8ff"/>
+  <path d="M37 68c16-12 21-28 37-34" fill="none" stroke="#8de8ff" stroke-width="4" stroke-linecap="round" opacity=".65"/>
+</svg>

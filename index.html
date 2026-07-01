@@ -1210,6 +1210,14 @@ canvas {
   letter-spacing: 1px;
   background: var(--ability-color, #00d4ff);
   box-shadow: 0 0 24px var(--ability-glow, rgba(0,212,255,0.45));
+  overflow: hidden;
+}
+.ability-card .ability-icon img,
+.ability-hud-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .ability-card .ability-name {
   position: relative;
@@ -1470,6 +1478,7 @@ canvas {
   letter-spacing: 1px;
   box-shadow: 0 0 18px var(--ability-glow, rgba(0,212,255,0.42));
   position: relative;
+  overflow: hidden;
 }
 .ability-hud-icon::after {
   content: "";
@@ -2877,7 +2886,7 @@ function buildAbilityDisplay(charKey) {
   wrapper.innerHTML = `
     <div class="owned-label">Ability</div>
     <div class="ability-card" style="--ability-color:${ability.color};--ability-glow:${ability.glow};">
-      <div class="ability-icon">${ability.icon}</div>
+      <div class="ability-icon"><img src="${ability.asset}" alt="${ability.name} icon"></div>
       <div class="ability-name">${ability.name}</div>
       <div class="ability-desc">${ability.description}</div>
       <div class="ability-meta">
@@ -3406,6 +3415,7 @@ const ABILITY_DEFS = {
   isagi: {
     name: 'Direct Shot',
     icon: 'DS',
+    asset: 'assets/ability_direct_shot.svg',
     cooldown: 7,
     color: '#00ff66',
     glow: 'rgba(0,255,102,0.45)',
@@ -3415,6 +3425,7 @@ const ABILITY_DEFS = {
   chigiri: {
     name: 'Explosive Speed',
     icon: 'EX',
+    asset: 'assets/ability_explosive_speed.svg',
     cooldown: 10,
     color: '#ff3b6b',
     glow: 'rgba(255,59,107,0.45)',
@@ -3424,6 +3435,7 @@ const ABILITY_DEFS = {
   bachira: {
     name: 'Monster Dribble',
     icon: 'MD',
+    asset: 'assets/ability_monster_dribble.svg',
     cooldown: 8,
     color: '#8cff3f',
     glow: 'rgba(140,255,63,0.45)',
@@ -3433,6 +3445,7 @@ const ABILITY_DEFS = {
   rin: {
     name: 'Curved Shot',
     icon: 'CS',
+    asset: 'assets/ability_curved_shot.svg',
     cooldown: 10,
     color: '#55d7ff',
     glow: 'rgba(85,215,255,0.48)',
@@ -3442,6 +3455,7 @@ const ABILITY_DEFS = {
   nagi: {
     name: 'World-class Touch',
     icon: 'WT',
+    asset: 'assets/ability_world_class_touch.svg',
     cooldown: 12,
     color: '#d8f1ff',
     glow: 'rgba(216,241,255,0.5)',
@@ -3451,6 +3465,7 @@ const ABILITY_DEFS = {
   barou: {
     name: 'Predator Shot',
     icon: 'PS',
+    asset: 'assets/ability_predator_shot.svg',
     cooldown: 7,
     color: '#ff1744',
     glow: 'rgba(255,23,68,0.5)',
@@ -4342,7 +4357,7 @@ function updateAbilityHud() {
   card.style.setProperty('--ability-glow', def.glow);
   card.style.setProperty('--cooldown-percent', Math.round(readyPercent * 100) + '%');
   card.style.setProperty('--cooldown-deg', Math.round(readyPercent * 360) + 'deg');
-  icon.textContent = def.icon;
+  icon.innerHTML = `<img src="${def.asset}" alt="${def.name} icon">`;
   name.textContent = def.name;
   fill.style.width = Math.round(readyPercent * 100) + '%';
   if (hp.abilityCooldown > 0) status.textContent = 'Cooldown ' + Math.ceil(hp.abilityCooldown / FPS) + 's';
