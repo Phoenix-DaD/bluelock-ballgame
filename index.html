@@ -3688,7 +3688,7 @@ class Ball {
       ctrlX: sx + dx * 0.45 + px * bend,
       ctrlY: sy + dy * 0.45 + py * bend,
       timer: 0,
-      duration: clamp(Math.round(mag / 9), 34, 62),
+      duration: clamp(Math.round(mag / 13), 24, 42),
       colors,
       shooter: player,
       lastX: this.x,
@@ -3736,8 +3736,8 @@ class Ball {
       addAbilitySpark(this.x, this.y, c.colors, 12, 20);
       if (c.timer >= c.duration) {
         const endVx = this.x - c.lastX, endVy = this.y - c.lastY, m = Math.hypot(endVx, endVy) || 1;
-        this.vx = (endVx / m) * 8;
-        this.vy = (endVy / m) * 8;
+        this.vx = (endVx / m) * 12;
+        this.vy = (endVy / m) * 12;
         this.curve = null;
       }
       c.lastX = this.x; c.lastY = this.y;
