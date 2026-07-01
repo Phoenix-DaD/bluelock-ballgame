@@ -2391,13 +2391,13 @@ function selectPlayMode(mode) {
   // Party size-based mode restrictions
   const partySize = currentParty ? (currentParty.members || []).length + 1 : 1;
   const is1v1Mode = ['vs_comp_1v1', 'ranked_1v1', 'unranked_1v1'].includes(mode);
-  const is2v2Mode = ['vs_comp_2v2', 'ranked_2v2', 'unranked_2v2'].includes(mode);
+  const isPartyRequired2v2Mode = ['ranked_2v2', 'unranked_2v2'].includes(mode);
   
   if (is1v1Mode && partySize >= 2) {
     alert('1v1 modes are not available with 2 or more party members. Switch to 2v2 or leave the party.');
     return;
   }
-  if (is2v2Mode && partySize < 2) {
+  if (isPartyRequired2v2Mode && partySize < 2) {
     alert('2v2 modes require at least 2 party members. Invite a friend or switch to 1v1.');
     return;
   }
@@ -2833,10 +2833,10 @@ function closeParty2v2Config() {
 
 function startParty2v2(config) {
   party2v2Config = config;
+  const mode = pendingParty2v2Mode || 'vs_comp_2v2';
   closeParty2v2Config();
   // After picking config, show difficulty modal
-  showDifficultyModal(pendingParty2v2Mode);
-  pendingParty2v2Mode = null;
+  showDifficultyModal(mode);
 }
 
 // ─── Yen & Display ──────────────────────────────────────────────
@@ -3639,14 +3639,43 @@ class Ball {
   startTrail(colors, timer = 50, size = 10) {
     this.trail = { colors, timer, maxTimer: timer, size };
   }
+  chooseCurveBendSide(player, target, px, py, bendDistance) {
+    const sx = player.x, sy = player.y;
+    const dx = target.x - sx, dy = target.y - sy;
+    const blockers = players.filter(p => p !== player && p.team !== player.team);
+    const scoreSide = (side) => {
+      let danger = 0;
+      const ctrlX = sx + dx * 0.42 + px * bendDistance * side;
+      const ctrlY = sy + dy * 0.42 + py * bendDistance * side;
+      const fieldSpace = Math.min(ctrlX, WIDTH - ctrlX, ctrlY, HEIGHT - ctrlY);
+      for (const blocker of blockers) {
+        const line = pointLineDistance(blocker.x, blocker.y, sx, sy, target.x, target.y);
+        if (line.t <= 0.05 || line.t >= 0.95 || line.distance > blocker.radius + 110) continue;
+        const lateral = (blocker.x - sx) * px + (blocker.y - sy) * py;
+        const blockerSide = lateral >= 0 ? 1 : -1;
+        const distanceWeight = 1 - clamp(line.distance / 140, 0, 1);
+        const middleWeight = 1 - Math.abs(line.t - 0.5);
+        danger += (side === blockerSide ? 2.4 : 0.15) * distanceWeight * middleWeight;
+      }
+      return danger - fieldSpace * 0.003;
+    };
+    const plusScore = scoreSide(1);
+    const minusScore = scoreSide(-1);
+    if (Math.abs(plusScore - minusScore) < 0.08) {
+      const midY = sy + dy * 0.42;
+      return midY < HEIGHT / 2 ? 1 : -1;
+    }
+    return plusScore < minusScore ? 1 : -1;
+  }
   startCurveShot(player, target, colors) {
     const sx = player.x, sy = player.y;
     const dx = target.x - sx, dy = target.y - sy;
     const mag = Math.hypot(dx, dy) || 1;
     const nx = dx / mag, ny = dy / mag;
     const px = -ny, py = nx;
-    const side = player.team === 'blue' ? -1 : 1;
-    const bend = clamp(mag * 0.34, 70, 170) * side;
+    const bendDistance = clamp(mag * 0.52, 115, 260);
+    const side = this.chooseCurveBendSide(player, target, px, py, bendDistance);
+    const bend = bendDistance * side;
     this.release(); player.hasBall = false;
     this.x = sx + nx * (player.radius + this.radius + 6);
     this.y = sy + ny * (player.radius + this.radius + 6);
