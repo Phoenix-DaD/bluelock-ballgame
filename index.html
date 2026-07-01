@@ -307,6 +307,7 @@ canvas {
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
   box-shadow: 0 16px 44px rgba(0,0,0,0.58), 0 0 34px rgba(0, 120, 255, 0.18);
   overflow: hidden;
+  transform-origin: left center;
 }
 .party-widget::before {
   content: '';
@@ -328,7 +329,35 @@ canvas {
   box-shadow: 0 0 18px rgba(255,215,0,0.5);
   pointer-events: none;
 }
-.party-widget.active { display: flex; }
+.party-widget.active {
+  display: flex;
+  animation: partyWidgetOpen 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.party-widget.active .party-open-lines {
+  animation: partyLinesFade 0.72s ease-out both;
+}
+.party-widget.active .party-open-lines span:first-child {
+  animation: partyLineTop 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.party-widget.active .party-open-lines span:last-child {
+  animation: partyLineBottom 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.party-open-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: rgba(3, 8, 24, 0.92);
+}
+.party-open-lines span {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00d4ff 16%, #fff 50%, #ffd700 84%, transparent);
+  box-shadow: 0 0 18px rgba(0,212,255,0.9), 0 0 26px rgba(255,215,0,0.34);
+}
 .party-widget .party-header {
   position: relative; z-index: 1;
   display: flex; justify-content: space-between; align-items: center;
@@ -381,6 +410,25 @@ canvas {
 @keyframes partyDotPulse {
   0%, 100% { transform: scale(1); opacity: 0.75; }
   50% { transform: scale(1.35); opacity: 1; }
+}
+@keyframes partyWidgetOpen {
+  0% { opacity: 0; transform: translateX(-28px) scaleX(0.05); filter: blur(5px); }
+  34% { opacity: 1; transform: translateX(-8px) scaleX(0.18); filter: blur(2px); }
+  100% { opacity: 1; transform: translateX(0) scaleX(1); filter: blur(0); }
+}
+@keyframes partyLineTop {
+  0% { transform: translateY(0) scaleX(0.12); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translateY(-94px) scaleX(1); opacity: 0.95; }
+}
+@keyframes partyLineBottom {
+  0% { transform: translateY(0) scaleX(0.12); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translateY(94px) scaleX(1); opacity: 0.95; }
+}
+@keyframes partyLinesFade {
+  0%, 78% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
 }
 .party-avatars-row {
   position: relative; z-index: 1;
@@ -1478,8 +1526,9 @@ Sign in with Google
 <button class="menu-btn settings" onclick="goToSettings()">SETTINGS</button>
 </div>
 
-<!-- Party Widget (bottom left, always visible) -->
-<div class="party-widget active" id="partyWidget">
+<!-- Party Widget (bottom left, opens after load) -->
+<div class="party-widget" id="partyWidget">
+  <div class="party-open-lines" aria-hidden="true"><span></span><span></span></div>
   <div class="party-header">
     <div class="party-title-block">
       <div class="party-kicker">Neo Egoist</div>
@@ -1983,6 +2032,7 @@ async function handleLoss() {
 
 // ─── UI Navigation ──────────────────────────────────────────────
 function showLoginPage() {
+  resetPartyWidgetReveal();
   hideAllScreens(); gameState = 'login';
   document.getElementById('loginPage').classList.remove('hidden');
   checkPendingReload();
@@ -2228,6 +2278,18 @@ async function removeFriend(id) {
 // ─── Party System ──────────────────────────────────────────────
 let currentParty = null;
 
+function openPartyWidget() {
+  const widget = document.getElementById('partyWidget');
+  if (!widget || widget.classList.contains('active')) return;
+  widget.classList.add('active');
+}
+
+function resetPartyWidgetReveal() {
+  const widget = document.getElementById('partyWidget');
+  if (!widget) return;
+  widget.classList.remove('active');
+}
+
 async function loadParty() {
   if (!currentUser) return;
   const { data, error } = await supabaseClient.rpc('get_open_party');
@@ -2247,7 +2309,6 @@ function updatePartyWidget() {
   const members = currentParty ? (currentParty.members || []) : [];
   const isLeader = currentParty ? currentParty.leader_id === currentUser.id : true;
   const memberCount = members.length + 1;
-  document.getElementById('partyWidget').classList.add('active');
   document.getElementById('partyCount').textContent = memberCount + '/4';
   const statusText = document.getElementById('partyStatusText');
   if (statusText) statusText.textContent = memberCount > 1 ? 'Ego Link' : 'Solo Queue';
@@ -2277,6 +2338,7 @@ function updatePartyWidget() {
   }
   
   row.innerHTML = html;
+  openPartyWidget();
 }
 
 function renderPartyMembers() {
