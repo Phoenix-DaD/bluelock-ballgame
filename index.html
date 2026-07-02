@@ -4396,7 +4396,8 @@ function snapshotAbilityTimers() {
     aiRole: p.aiRole,
     characterKey: getCharacterKey(p.character),
     abilityCooldown: p.abilityCooldown,
-    abilityCooldownMax: p.abilityCooldownMax
+    abilityCooldownMax: p.abilityCooldownMax,
+    speedBoostTimer: p.speedBoostTimer
   }));
 }
 
@@ -4414,6 +4415,7 @@ function restoreAbilityTimers(snapshot) {
     used.add(index);
     player.abilityCooldown = snapshot[index].abilityCooldown;
     player.abilityCooldownMax = snapshot[index].abilityCooldownMax;
+    player.speedBoostTimer = snapshot[index].speedBoostTimer;
   }
 }
 
