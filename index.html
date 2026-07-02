@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="app-version" content="1.0.4">
 <title>BLUE LOCK — Ego Striker</title>
+<link rel="icon" type="image/png" href="assets/bluelock_logo.png">
+<link rel="apple-touch-icon" href="assets/bluelock_logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -21,8 +23,11 @@ body {
 }
 #gameContainer { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
 canvas {
-  width: 900px;
-  height: 550px;
+  width: 1125px;
+  height: 688px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  object-fit: contain;
   border: 3px solid #1a1a3a;
   border-radius: 4px;
   cursor: crosshair;
@@ -3362,7 +3367,7 @@ function selectPlayCharacter(charKey, rarity, mode) {
 // ─── Canvas & Constants ──────────────────────────────────────────────
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const WIDTH = 900, HEIGHT = 550;
+const WIDTH = 1125, HEIGHT = 688;
 canvas.width = WIDTH; canvas.height = HEIGHT;
 const PLAYER_RADIUS = 30, BALL_RADIUS = 12, FRICTION = 0.94, BALL_FRICTION = 0.985;
 const PLAYER_ACCEL = 0.6, MAX_SPEED = 6.5, DRIBBLE_SPEED = 4.2, SHOOT_POWER = 16;
@@ -3424,13 +3429,13 @@ const ABILITY_DEFS = {
     useText: 'Requires ball + aim'
   },
   chigiri: {
-    name: 'Explosive Speed',
-    icon: 'EX',
+    name: 'Pink Cheetah',
+    icon: 'PC',
     asset: 'assets/ability_explosive_speed.svg',
     cooldown: 10,
     color: '#ff3b6b',
     glow: 'rgba(255,59,107,0.45)',
-    description: 'Boosts speed by 50% for 4 seconds and leaves sprint streaks.',
+    description: 'Doubles speed for 4 seconds and leaves pink sprint streaks.',
     useText: 'No aim needed'
   },
   bachira: {
@@ -3899,6 +3904,36 @@ class Player {
     new Particle(blocker.x, blocker.y, blocker.character ? blocker.character.color : '#00d4ff', 6);
     addAbilitySpark(ball.x, ball.y, ['#ffffff', '#00d4ff'], 9, 18);
   }
+  _setAiShotBlockedDelay() {
+    if (this.isHuman) return;
+    this.aiShotBlockedTimer = frames(selectedDifficulty === 'hard' ? 0.75 : selectedDifficulty === 'medium' ? 1.1 : 1.5);
+    this.aiDecisionTimer = 0;
+    this.aiPressing = false;
+  }
+  _sidestepBlockedShot(blocker, nx, ny, aiSideStep = 0.25) {
+    const side = ((this.y < HEIGHT / 2) ? -1 : 1) * (this.team === 'blue' ? 1 : -1);
+    const px = -ny * side, py = nx * side;
+    this.vx += px * Math.max(0.22, aiSideStep * 2.2);
+    this.vy += py * Math.max(0.22, aiSideStep * 2.2);
+    if (blocker) {
+      const awayX = this.x - blocker.x, awayY = this.y - blocker.y, away = Math.hypot(awayX, awayY) || 1;
+      this.vx += (awayX / away) * 0.35;
+      this.vy += (awayY / away) * 0.35;
+    }
+  }
+  _tryAiGoalShot(shootX, goalY, aiSideStep, powerScale = 1, trail = null) {
+    const dx = shootX - this.x, dy = goalY - this.y;
+    const mag = Math.hypot(dx, dy);
+    if (mag === 0) return false;
+    const nx = dx / mag, ny = dy / mag;
+    const blocker = this._findShotBlocker(nx, ny, this.shootPower * powerScale);
+    if (blocker) {
+      this._setAiShotBlockedDelay();
+      this._sidestepBlockedShot(blocker.player, nx, ny, aiSideStep);
+      return false;
+    }
+    return this.kick(dx, dy, powerScale, trail);
+  }
   kick(vx, vy, powerScale = 1, trail = null) {
     if (!this.hasBall) return false;
     const mag = Math.hypot(vx, vy);
@@ -3919,8 +3954,8 @@ class Player {
   }
   dash(dirX, dirY) { if (this.dashCooldown > 0 || this.stunned > 0 || this.loseControl > 0) return; const mag = Math.hypot(dirX, dirY); if (mag === 0) return; this.dashCooldown = this.dashCooldownMax; this.dashTimer = DASH_DURATION; this.vx = (dirX / mag) * DASH_FORCE; this.vy = (dirY / mag) * DASH_FORCE; new Particle(this.x, this.y, this.character ? this.character.color : '#ff1744', 8); }
   dribble() { if (this.dribbleCooldown > 0 || this.stunned > 0) return; this.dribbleTimer = this.dribbleDurationMax; this.dribbleCooldown = this.dribbleCooldownMax; }
-  getMaxSpeed() { return this.maxSpeed * (this.speedBoostTimer > 0 ? 1.5 : 1); }
-  getDribbleSpeed() { return this.dribbleSpeed * (this.speedBoostTimer > 0 ? 1.5 : 1); }
+  getMaxSpeed() { return this.maxSpeed * (this.speedBoostTimer > 0 ? 2 : 1); }
+  getDribbleSpeed() { return this.dribbleSpeed * (this.speedBoostTimer > 0 ? 2 : 1); }
   abilityReady() { return this.abilityCooldown <= 0 && this.stunned <= 0 && this.loseControl <= 0 && !gameOver; }
   _startAbilityCooldown(def) { this.abilityCooldownMax = frames(def.cooldown); this.abilityCooldown = this.abilityCooldownMax; }
   _abilityFail(reason, human = false) {
@@ -4007,10 +4042,14 @@ class Player {
     if (ball.carrier) return this._abilityFail('Ball is not loose', human);
     const d = dist(this.x, this.y, ball.x, ball.y);
     if (d > NAGI_TOUCH_RANGE) return this._abilityFail('Ball is too far away', human);
-    addAbilityLine([{ x: ball.x, y: ball.y }, { x: this.x, y: this.y }], ['#d8f1ff', '#7fd7ff'], 6, 24);
+    const startX = this.x, startY = this.y;
+    addAbilityLine([{ x: startX, y: startY }, { x: ball.x, y: ball.y }], ['#d8f1ff', '#7fd7ff'], 6, 24);
     for (let i = 0; i < 12; i++) addAbilitySpark(ball.x, ball.y, ['#d8f1ff', '#7fd7ff'], 10, 24);
+    this.x = clamp(ball.x, this.radius, WIDTH - this.radius);
+    this.y = clamp(ball.y, this.radius, HEIGHT - this.radius);
+    this.vx = 0; this.vy = 0;
     ball.vx = 0; ball.vy = 0; ball.curve = null; ball.trail = null; ball.untouchableTimer = 0;
-    ball.carrier = this; this.hasBall = true;
+    ball.attachTo(this);
     this._startAbilityCooldown(def);
     return true;
   }
@@ -4118,7 +4157,7 @@ class Player {
       const shootX = this.team === 'red' ? 0 : WIDTH;
       if (this.aiShotBlockedTimer <= 0 && ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold))) {
         const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread * (oppDist > 150 ? 1 : 0.3);
-        this.kick(shootX - this.x, goalY - this.y); return;
+        if (this._tryAiGoalShot(shootX, goalY, aiSideStep)) return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
       // Forwards: dash toward goal for power shot when close
@@ -4187,7 +4226,7 @@ class Player {
       const shootX = this.team === 'red' ? 0 : WIDTH;
       if (this.aiShotBlockedTimer <= 0 && ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold))) {
         const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread;
-        this.kick(shootX - this.x, goalY - this.y); return;
+        if (this._tryAiGoalShot(shootX, goalY, aiSideStep)) return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
     } else if (human && human.hasBall) {
@@ -4283,7 +4322,7 @@ class Player {
       const shootX = this.team === 'red' ? 0 : WIDTH;
       if (this.aiShotBlockedTimer <= 0 && ((this.team === 'red' && this.x < shootThreshold) || (this.team === 'blue' && this.x > WIDTH - shootThreshold))) {
         const goalY = HEIGHT / 2 + (Math.random() - 0.5) * aiShootSpread * 0.5;
-        this.kick(shootX - this.x, goalY - this.y); return;
+        if (this._tryAiGoalShot(shootX, goalY, aiSideStep)) return;
       }
       if (oppDist < 120) { const ax = this.x - opp.x, ay = this.y - opp.y, am = Math.hypot(ax, ay); if (am > 0) { this.vx += (ax / am) * aiSideStep; this.vy += (ay / am) * aiSideStep; } }
       // Forwards: dash toward goal for power shot when close
@@ -4435,6 +4474,13 @@ function resolveCollisions() {
       const checkDash = (dasher, target) => {
         if (!dasher.isDashing) return;
         if (target.isDribbling) { dasher.loseControl = LOSE_CONTROL_FRAMES; dasher.dashTimer = 0; dasher.vx *= 0.15; dasher.vy *= 0.15; new Particle(dasher.x, dasher.y, '#00d4ff', 6); }
+        else if (target.hasBall && target.isAbilityDashing && getCharacterKey(target.character) === 'bachira') {
+          dasher.loseControl = LOSE_CONTROL_FRAMES;
+          dasher.dashTimer = 0;
+          dasher.vx *= 0.15; dasher.vy *= 0.15;
+          new Particle(dasher.x, dasher.y, '#8cff3f', 7);
+          new Particle(target.x, target.y, '#ffe56d', 5);
+        }
         else if (target.hasBall) { ball.release(); target.hasBall = false; target.stunned = 25; ball.x = target.x; ball.y = target.y; ball.vx = 0; ball.vy = 0; dasher.dashTimer = 0; new Particle(target.x, target.y, '#ff1744', 8); new Particle(dasher.x, dasher.y, dasher.character ? dasher.character.color : '#4488ff', 5); }
       };
       checkDash(p1, p2); checkDash(p2, p1);
@@ -4694,16 +4740,18 @@ window.addEventListener('mousedown', e => {
   if (gameState !== 'playing' || gameOver) return;
   if (e.target.closest('button') || e.target.closest('.screen-overlay')) return;
   const rect = canvas.getBoundingClientRect();
-  const mx = Math.max(0, Math.min(WIDTH, e.clientX - rect.left));
-  const my = Math.max(0, Math.min(HEIGHT, e.clientY - rect.top));
+  const scaleX = WIDTH / (rect.width || WIDTH), scaleY = HEIGHT / (rect.height || HEIGHT);
+  const mx = Math.max(0, Math.min(WIDTH, (e.clientX - rect.left) * scaleX));
+  const my = Math.max(0, Math.min(HEIGHT, (e.clientY - rect.top) * scaleY));
   const hp = humanPlayer(); if (!hp) return;
   if (e.button === 0) { if (hp.hasBall) { const dx = mx - hp.x, dy = my - hp.y; hp.kick(dx, dy); } }
   else if (e.button === 2) { if (hp.hasBall) hp.dribble(); else { const dx = mx - hp.x, dy = my - hp.y; hp.dash(dx, dy); } }
 });
 window.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
-  mouse.rawX = e.clientX - rect.left;
-  mouse.rawY = e.clientY - rect.top;
+  const scaleX = WIDTH / (rect.width || WIDTH), scaleY = HEIGHT / (rect.height || HEIGHT);
+  mouse.rawX = (e.clientX - rect.left) * scaleX;
+  mouse.rawY = (e.clientY - rect.top) * scaleY;
   mouse.x = Math.max(0, Math.min(WIDTH, mouse.rawX));
   mouse.y = Math.max(0, Math.min(HEIGHT, mouse.rawY));
 });
